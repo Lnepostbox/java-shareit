@@ -7,12 +7,9 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
-import ru.practicum.shareit.request.service.ItemRequestService;
-import ru.practicum.shareit.user.service.UserService;
-
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/items")
@@ -20,15 +17,11 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ItemController {
     private final ItemService itemService;
-    private final UserService userService;
-    private final ItemRequestService requestService;
 
     @GetMapping
     public List<ItemDto> findAllItems(@RequestHeader("X-Sharer-User-Id") Long userId) {
         log.debug("ItemController: выполнено findAllItems - {}.", userId);
-        return itemService.findAllItems(userId).stream()
-                .map(ItemMapper::toItemDto)
-                .collect(Collectors.toList());
+        return ItemMapper.toItemDtoList(itemService.findAllItems(userId));
     }
 
     @GetMapping("/{itemId}")
@@ -39,19 +32,21 @@ public class ItemController {
 
     @GetMapping("/search")
     public List<ItemDto> findItemByParams(@RequestParam String text) {
-        log.debug("ItemController: выполнено findItemByParams - {}.", text);
-        return itemService.findItemsByText(text).stream()
-                .map(ItemMapper::toItemDto)
-                .collect(Collectors.toList());
+        if (text.isBlank()) {
+            log.debug("ItemController: выполено findItemByParams - текст не обнаружен.");
+            return new ArrayList<>();
+        } else {
+            log.debug("ItemController: выполнено findItemByParams - {}.", text);
+            return ItemMapper.toItemDtoList(itemService.findItemsByText(text));
+        }
     }
 
     @PostMapping
     public ItemDto createItem(@RequestHeader("X-Sharer-User-Id") Long userId, @Valid @RequestBody ItemDto itemDto) {
         log.debug("ItemController: выполнено createItem - {}.", itemDto);
         Item item = ItemMapper.toItem(itemDto);
-        item.setRequest(itemDto.getRequest() != null ? requestService.findItemRequestById(itemDto.getRequest()) : null);
-        item.setOwner(userService.findUserById(userId));
-        return ItemMapper.toItemDto(itemService.createItem(userId, item));
+        Long requestId = itemDto.getRequest();
+        return ItemMapper.toItemDto(itemService.createItem(userId, item, requestId));
     }
 
     @PatchMapping("/{itemId}")
@@ -62,9 +57,8 @@ public class ItemController {
     ) {
         log.debug("ItemController: выполнено updateItem - {}.", itemDto);
         Item item = ItemMapper.toItem(itemDto);
-        item.setRequest(itemDto.getRequest() != null ? requestService.findItemRequestById(itemDto.getRequest()) : null);
-        item.setOwner(userService.findUserById(userId));
-        return ItemMapper.toItemDto(itemService.updateItem(userId, itemId, item));
+        Long requestId = itemDto.getRequest();
+        return ItemMapper.toItemDto(itemService.updateItem(userId, itemId, item, requestId));
     }
 
     @DeleteMapping("/{itemId}")

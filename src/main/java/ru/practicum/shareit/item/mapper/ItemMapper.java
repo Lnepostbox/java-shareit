@@ -3,6 +3,8 @@ package ru.practicum.shareit.item.mapper;
 import org.mapstruct.Mapper;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Mapper
 public class ItemMapper {
@@ -23,5 +25,11 @@ public class ItemMapper {
                 .description(itemDto.getDescription())
                 .available(itemDto.getAvailable())
                 .build();
+    }
+
+    public static List<ItemDto> toItemDtoList(List<Item> items) {
+        return items.stream()
+                .map(ItemMapper::toItemDto)
+                .collect(Collectors.toList());
     }
 }

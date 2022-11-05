@@ -7,7 +7,9 @@ import ru.practicum.shareit.exception.AlreadyExistsException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
-import java.util.ArrayList;
+import ru.practicum.shareit.request.service.ItemRequestService;
+import ru.practicum.shareit.user.service.UserService;
+
 import java.util.List;
 
 @Service
@@ -15,6 +17,8 @@ import java.util.List;
 @Slf4j
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRep;
+    private final UserService userService;
+    private final ItemRequestService requestService;
 
     @Override
     public List<Item> findAllItems(Long userId) {
@@ -36,33 +40,33 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<Item> findItemsByText(String text) {
-        if (text != null && !text.isBlank()) {
             List<Item> searchedItems = itemRep.findItemsByText(text.toLowerCase());
             log.debug("ItemService: выполнено findItemsByText - {}.", searchedItems);
             return searchedItems;
-        } else {
-            log.debug("ItemService: выполено findItemsByText - текст не обнаружен.");
-            return new ArrayList<>();
-        }
     }
 
     @Override
-    public Item createItem(Long userId, Item item) {
+    public Item createItem(Long userId, Item item, Long requestId) {
         if (item.getId() != null && itemRep.itemExists(item.getId())) {
             throw new AlreadyExistsException(Item.class.toString(), item.getId());
         }
+        item.setOwner(userService.findUserById(userId));
+        item.setRequest(requestId != null ? requestService.findItemRequestById(requestId) : null);
         item = itemRep.createItem(userId, item);
         log.debug("ItemService: выполнено createItem - {}.", item);
         return item;
     }
 
     @Override
-    public Item updateItem(Long userId, Long itemId, Item item) {
+    public Item updateItem(Long userId, Long itemId, Item item, Long requestId) {
         if (!itemRep.itemExists(itemId)) {
             throw new NotFoundException(Item.class.toString(), itemId);
         }
+        item.setOwner(userService.findUserById(userId));
+        item.setRequest(requestId != null ? requestService.findItemRequestById(requestId) : null);
+        item = itemRep.updateItem(userId, itemId, item);
         log.debug("ItemService: выполнено updateItem - {}.", item);
-        return itemRep.updateItem(userId, itemId, item);
+        return item;
     }
 
     @Override

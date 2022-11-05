@@ -11,9 +11,9 @@ public interface ItemService {
 
     List<Item> findItemsByText(String text);
 
-    Item createItem(Long userId, Item item);
+    Item createItem(Long userId, Item item, Long requestId);
 
-    Item updateItem(Long userId, Long itemId, Item item);
+    Item updateItem(Long userId, Long itemId, Item item, Long requestId);
 
     void deleteItemById(Long userId, Long itemId);
 }
