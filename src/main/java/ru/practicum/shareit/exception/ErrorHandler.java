@@ -28,6 +28,7 @@ public class ErrorHandler {
         log.debug(e.getMessage());
         return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
     }
+
     @ExceptionHandler
     public ResponseEntity<String> handleMethodArgumentNotValid(final MethodArgumentNotValidException e) {
         log.debug(e.getMessage());
