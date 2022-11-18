@@ -17,7 +17,7 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public List<UserDto> findAll() {return userService.findAll();}
+    public List<UserDto> findAll() { return userService.findAll(); }
 
     @GetMapping(value = "/{userId}")
     public UserDto findById(@PathVariable Long userId) {
@@ -32,9 +32,7 @@ public class UserController {
     @PatchMapping(value = "/{userId}")
     public UserDto update(
             @Validated(Update.class) @RequestBody UserDto userDto,
-            @PathVariable Long userId) {
-        return userService.update(userDto, userId);
-    }
+            @PathVariable Long userId) { return userService.update(userDto, userId); }
 
     @DeleteMapping(value = "/{userId}")
     public void deleteById(@PathVariable Long userId) {
