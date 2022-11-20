@@ -30,7 +30,21 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> searchBookingByItemOwnerIdAndStartIsAfterOrderByStartDesc(Long id, LocalDateTime time);
 
-    List<Booking> findBookingsByItemOwnerIdOrderByStartDesc(Long id);
+    @Query("select b " +
+            "from Booking b left join Item as i on b.item.id = i.id " +
+            "left join User as us on i.owner.id = us.id " +
+            "where us.id = ?1 " +
+            "and b.status = 'WAITING'" +
+            "order by b.start DESC")
+    List<Booking> findWaitingBookingsByItemOwnerIdOrderByStartDesc(Long id);
+
+    @Query("select b " +
+            "from Booking b left join Item as i on b.item.id = i.id " +
+            "left join User as us on i.owner.id = us.id " +
+            "where us.id = ?1 " +
+            "and b.status = 'REJECTED'" +
+            "order by b.start DESC")
+    List<Booking> findRejectedBookingsByItemOwnerIdOrderByStartDesc(Long id);
 
     @Query("select b " +
             "from Booking b left join Item as i on b.item.id = i.id " +

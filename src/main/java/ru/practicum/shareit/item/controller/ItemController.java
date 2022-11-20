@@ -32,6 +32,9 @@ public class ItemController {
 
     @GetMapping(value = "/search")
     public List<ItemDto> findAllByText(@RequestParam(name = "text") String text) {
+        if (text.isBlank()) {
+            return List.of();
+        }
         return itemService.findAllByText(text);
     }
 

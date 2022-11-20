@@ -5,7 +5,6 @@ import javax.persistence.*;
 
 @Getter
 @Setter
-@ToString
 @Entity
 @Table(name = "users", schema = "public")
 public class User {

@@ -85,7 +85,7 @@ public class BookingServiceImpl implements BookingService {
     public BookingDto findById(Long userId, Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException(
-                String.format("Бронирование ID %s не существует.", bookingId)));
+                        String.format("Бронирование ID %s не существует.", bookingId)));
         if (!booking.getBooker().getId().equals(userId) && !booking.getItem().getOwner().getId().equals(userId)) {
             log.error("Пользователь ID {} не осущетвлял бронирование", userId);
             throw new NotFoundException(String.format("Пользователь ID %s не осуществлял бронирование.", userId));
@@ -133,16 +133,15 @@ public class BookingServiceImpl implements BookingService {
             case WAITING:
                 log.info("Бронирования в ожидании владельца ID {} ", userId);
                 return bookingRepository
-                        .findBookingsByItemOwnerIdOrderByStartDesc(userId)
+                        .findWaitingBookingsByItemOwnerIdOrderByStartDesc(userId)
                         .stream()
-                        .filter(booking -> booking.getStatus().equals(Status.WAITING))
                         .map(BookingMapper::toBookingDtoFromBooking)
                         .collect(Collectors.toList());
             case REJECTED:
                 log.info("Отклонённые бронирования владельца ID {} ", userId);
                 return bookingRepository
-                        .findBookingsByItemOwnerIdOrderByStartDesc(userId).stream()
-                        .filter(booking -> booking.getStatus().equals(Status.REJECTED))
+                        .findRejectedBookingsByItemOwnerIdOrderByStartDesc(userId)
+                        .stream()
                         .map(BookingMapper::toBookingDtoFromBooking)
                         .collect(Collectors.toList());
             default:
@@ -174,23 +173,23 @@ public class BookingServiceImpl implements BookingService {
             log.error("Некорректное время начала бронирования.");
             throw new BookingException("Некорректное время начала бронирования.");
         }
-        if (item.getAvailable()) {
-            booking.setItem(item);
-            Booking bookingSave = bookingRepository.save(booking);
-            log.info("Создано бронирование ID {}:{}", bookingSave.getId(), bookingSave);
-            return toBookingDtoFromBooking(bookingSave);
-        } else {
+        if (!item.getAvailable()) {
             log.error("Вещь ID {} не доступна для бронирования.", item.getId());
             throw new ValidationException(
                     String.format("Вещь ID %s не доступна для бронирования.", item.getId()));
         }
+        booking.setItem(item);
+        Booking bookingSave = bookingRepository.save(booking);
+        log.info("Создано бронирование ID {}:{}", bookingSave.getId(), bookingSave);
+        return toBookingDtoFromBooking(bookingSave);
     }
 
     @Override
     public BookingDto update(Long userId, Long bookingId, Boolean approved) {
-        BookingDto bookingDto = toBookingDtoFromBooking(bookingRepository.findById(bookingId).orElseThrow());
-        Booking booking = BookingMapper.toBookingFromBookingDto(bookingDto);
-        if (!userId.equals(bookingDto.getItem().getOwner().getId())) {
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow(() -> new NotFoundException(
+                String.format("Бронирование ID %s не существует.", bookingId)));
+
+        if (!userId.equals(booking.getItem().getOwner().getId())) {
             log.error("Подтвердить бронирование может только владелец вещи");
             throw new NotFoundException("Подтвердить бронирование может только владелец вещи");
         }
@@ -201,19 +200,16 @@ public class BookingServiceImpl implements BookingService {
         if (approved == null) {
             log.error("Необходимо указать статус возможности аренды (approved).");
             throw new BookingException("Необходимо указать статус возможности аренды (approved).");
-        } else if (approved) {
+        }
+        if (approved) {
             booking.setStatus(Status.APPROVED);
-            Booking bookingSave = bookingRepository.save(booking);
-            log.info("Бронирование ID {} обновлено: {}", bookingSave.getId(), bookingSave);
-            return toBookingDtoFromBooking(bookingSave);
         } else {
             booking.setStatus(Status.REJECTED);
-            booking.setItem(bookingDto.getItem());
-            Booking bookingSave = bookingRepository.save(booking);
-            log.info("Бронирование ID {} обновлено: {}", bookingSave.getId(), bookingSave);
-            return toBookingDtoFromBooking(bookingSave);
         }
-    }
+        Booking bookingSave = bookingRepository.save(booking);
+        log.info("Бронирование ID {} обновлено: {}", bookingSave.getId(), bookingSave);
+        return toBookingDtoFromBooking(bookingSave);
+        }
 
     @Override
     public void deleteById(Long bookingId) {

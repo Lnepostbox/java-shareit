@@ -10,23 +10,20 @@ import ru.practicum.shareit.booking.model.Status;
 @Mapper
 public class BookingMapper {
 
-    public static Booking toBookingFromBookingDto(BookingDto bookingDto) {
-        return new Booking(
-                bookingDto.getId(),
-                bookingDto.getStart(),
-                bookingDto.getEnd(),
-                bookingDto.getItem(),
-                bookingDto.getBooker(),
-                bookingDto.getStatus());
-    }
-
     public static BookingDto toBookingDtoFromBooking(Booking booking) {
+
         return new BookingDto(
                 booking.getId(),
                 booking.getStart(),
                 booking.getEnd(),
-                booking.getItem(),
-                booking.getBooker(),
+                BookingDto.Item.builder()
+                        .id(booking.getItem().getId())
+                        .name(booking.getItem().getName())
+                        .build(),
+                BookingDto.Booker.builder()
+                        .id(booking.getBooker().getId())
+                        .name(booking.getBooker().getName())
+                        .build(),
                 booking.getStatus());
     }
 

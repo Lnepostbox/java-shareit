@@ -36,8 +36,8 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDtoWithBooking> findAllByUserId(Long userId) {
-        List<ItemDtoWithBooking> itemsDtoWithBookingList = itemRepository.findAll().stream()
-                .filter(item -> item.getOwner().getId().equals(userId))
+        List<ItemDtoWithBooking> itemsDtoWithBookingList = itemRepository.findAllByOwnerId(userId)
+                .stream()
                 .map(ItemMapper::toItemDtoWithBooking)
                 .collect(Collectors.toList());
         for (ItemDtoWithBooking itemDtoWithBooking : itemsDtoWithBookingList) {
@@ -75,10 +75,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> findAllByText(String text) {
-        if (text.isEmpty()) {
-            return List.of();
-        }
-        log.info("Текст найден.");
+        log.info("Получены вещи по тексту.");
         return itemRepository.search(text)
                 .stream()
                 .filter(Item::getAvailable)
@@ -102,38 +99,25 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto update(ItemDto itemDto, Long userId, Long itemId) {
         Item item = ItemMapper.toItem(itemDto);
         final Item itemUpdate = itemRepository.findById(itemId)
-                .orElseThrow(() -> new NotFoundException(
-                        String.format("Вещь ID %s не существует.", itemId)));
-        if (itemUpdate.getOwner().getId().equals(userId)) {
-            if (item.getAvailable() != null && item.getName() == null && item.getDescription() == null) {
-                itemUpdate.setAvailable(item.getAvailable());
-                itemRepository.save(itemUpdate);
-                log.info("Обновлена вещь ID {}:{}", itemId, itemUpdate);
-                return ItemMapper.toItemDto(itemUpdate);
-            } else if (item.getName() != null && item.getAvailable() == null && item.getDescription() == null) {
-                itemUpdate.setName(item.getName());
-                itemRepository.save(itemUpdate);
-                log.info("Обновлена вещь ID {}:{}", itemId, itemUpdate);
-                return ItemMapper.toItemDto(itemUpdate);
-            } else if (item.getDescription() != null && item.getName() == null && item.getAvailable() == null) {
-                itemUpdate.setDescription(item.getDescription());
-                itemRepository.save(itemUpdate);
-                log.info("Обновлена вещь ID {}:{}", itemId, itemUpdate);
-                return ItemMapper.toItemDto(itemUpdate);
-            } else {
-                itemUpdate.setName(item.getName());
-                itemUpdate.setDescription(item.getDescription());
-                itemUpdate.setAvailable(item.getAvailable());
-                itemRepository.save(itemUpdate);
-                log.info("Обновлена вещь ID {}:{}", itemId, itemUpdate);
-                return ItemMapper.toItemDto(itemUpdate);
-            }
-        } else {
+                .orElseThrow(() -> new NotFoundException(String.format("Вещь ID %s не существует.", itemId)));
+        if (!itemUpdate.getOwner().getId().equals(userId)) {
             log.error("Пользователь ID  {} не владеет вещью.", userId);
-            throw new NotFoundException(
-                    String.format("Пользователь ID  %s не владеет вещью.", userId));
+            throw new NotFoundException(String.format("Пользователь ID  %s не владеет вещью.", userId));
         }
+        if (item.getAvailable() != null) {
+            itemUpdate.setAvailable(item.getAvailable());
+        }
+        if (item.getName() != null && !item.getName().isBlank()) {
+            itemUpdate.setName(item.getName());
+        }
+        if (item.getDescription() != null && !item.getDescription().isBlank()) {
+            itemUpdate.setDescription(item.getDescription());
+        }
+        itemRepository.save(itemUpdate);
+        log.info("Обновлена вещь ID {}:{}", itemId, itemUpdate);
+        return ItemMapper.toItemDto(itemUpdate);
     }
+
 
     @Override
     public void deleteById(Long id) {

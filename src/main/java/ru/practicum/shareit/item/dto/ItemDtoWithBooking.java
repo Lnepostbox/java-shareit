@@ -1,12 +1,8 @@
 package ru.practicum.shareit.item.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import ru.practicum.shareit.booking.dto.BookingItemDto;
-
+import lombok.*;
 import javax.validation.constraints.NotBlank;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -25,9 +21,29 @@ public class ItemDtoWithBooking {
 
     private Boolean available;
 
-    private BookingItemDto lastBooking;
+    private Booking lastBooking;
 
-    private BookingItemDto nextBooking;
+    private Booking nextBooking;
 
-    private List<CommentDto> comments;
+    private List<Comment> comments;
+
+    @Data
+    @Builder
+    public static class Booking {
+        private final Long id;
+
+        private final Long bookerId;
+    }
+
+    @Data
+    @Builder
+    public static class Comment {
+        private final Long id;
+
+        private final String text;
+
+        private final String authorName;
+
+        private final LocalDateTime created;
+    }
 }
