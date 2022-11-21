@@ -35,11 +35,12 @@ public class ItemServiceImpl implements ItemService {
     private final CommentRepository commentRepository;
 
     @Override
-    public List<ItemDtoWithBooking> findAllByUserId(Long userId) {
+    public List<ItemDtoWithBooking> findAllByOwnerId(Long userId) {
         List<ItemDtoWithBooking> itemsDtoWithBookingList = itemRepository.findAllByOwnerId(userId)
                 .stream()
                 .map(ItemMapper::toItemDtoWithBooking)
                 .collect(Collectors.toList());
+
         for (ItemDtoWithBooking itemDtoWithBooking : itemsDtoWithBookingList) {
             saveLastAndNextBooking(itemDtoWithBooking);
             List<Comment> comments = commentRepository.findAllByItemId(itemDtoWithBooking.getId());

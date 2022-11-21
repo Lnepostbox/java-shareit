@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface ItemService {
 
-    List<ItemDtoWithBooking> findAllByUserId(Long userId);
+    List<ItemDtoWithBooking> findAllByOwnerId(Long userId);
 
     ItemDtoWithBooking findById(Long userId, Long itemId);
 

@@ -19,8 +19,8 @@ public class ItemController {
     private final CommentService commentService;
 
     @GetMapping
-    public List<ItemDtoWithBooking> findAllByUserId(@RequestHeader("X-Sharer-User-Id") Long userId) {
-        return itemService.findAllByUserId(userId);
+    public List<ItemDtoWithBooking> findAllByOwnerId(@RequestHeader("X-Sharer-User-Id") Long userId) {
+        return itemService.findAllByOwnerId(userId);
     }
 
     @GetMapping(value = "/{itemId}")
