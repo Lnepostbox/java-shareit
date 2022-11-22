@@ -20,6 +20,7 @@ import ru.practicum.shareit.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import static ru.practicum.shareit.booking.mapper.BookingMapper.toBookingItemDtoFromBooking;
 import static ru.practicum.shareit.item.mapper.ItemMapper.toItemDtoWithBooking;
@@ -40,15 +41,22 @@ public class ItemServiceImpl implements ItemService {
                 .stream()
                 .map(ItemMapper::toItemDtoWithBooking)
                 .collect(Collectors.toList());
+        List<Comment> commentsAll = commentRepository.findAllByItemOwnerId(userId);
 
         for (ItemDtoWithBooking itemDtoWithBooking : itemsDtoWithBookingList) {
-            saveLastAndNextBooking(itemDtoWithBooking);
-            List<Comment> comments = commentRepository.findAllByItemId(itemDtoWithBooking.getId());
+
+            List<Comment> comments = commentsAll
+                    .stream()
+                    .filter(comment -> Objects.equals(comment.getItem().getId(), itemDtoWithBooking.getId()))
+                    .collect(Collectors.toList());
+
             if (!comments.isEmpty()) {
                 itemDtoWithBooking.setComments(comments
                         .stream().map(CommentMapper::toCommentDto)
                         .collect(Collectors.toList()));
             }
+            saveLastAndNextBooking(itemDtoWithBooking);
+
         }
         itemsDtoWithBookingList.sort(Comparator.comparing(ItemDtoWithBooking::getId));
         log.info("Получены все вещи.");
