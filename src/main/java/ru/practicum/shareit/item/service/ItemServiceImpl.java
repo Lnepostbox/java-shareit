@@ -46,11 +46,11 @@ public class ItemServiceImpl implements ItemService {
 
                     Booking lastBooking = bookingRepository.findLastBooking(LocalDateTime.now(), userId, item.getId());
                     Booking nextBooking = bookingRepository.findNextBooking(LocalDateTime.now(), userId, item.getId());
-                    itemDtoResponse.setLastBooking(new ItemDtoResponse.ItemBooking(
+                    itemDtoResponse.setLastBooking(lastBooking == null ? null : new ItemDtoResponse.ItemBooking(
                             lastBooking.getId(),
                             lastBooking.getBooker().getId()));
 
-                    itemDtoResponse.setNextBooking(new ItemDtoResponse.ItemBooking(
+                    itemDtoResponse.setNextBooking(nextBooking == null? null : new ItemDtoResponse.ItemBooking(
                             nextBooking.getId(),
                             nextBooking.getBooker().getId()));
 
@@ -74,6 +74,8 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDtoResponse findById(Long userId, Long itemId) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(String.format("User ID %s doesn't exist.", userId)));
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException(String.format("Item ID %s doesn't exist.", itemId)));
         ItemDtoResponse itemDtoResponse = toItemDtoResponse(item);
@@ -83,19 +85,17 @@ public class ItemServiceImpl implements ItemService {
                 .map(CommentMapper::toCommentDto)
                 .collect(toList()));
 
-        if (item.getOwner().getId().equals(userId)) {
-
         Booking lastBooking = bookingRepository.findLastBooking(LocalDateTime.now(), userId, itemId);
         Booking nextBooking = bookingRepository.findNextBooking(LocalDateTime.now(), userId, itemId);
 
-        itemDtoResponse.setLastBooking(new ItemDtoResponse.ItemBooking(
+        itemDtoResponse.setLastBooking(lastBooking == null ? null : new ItemDtoResponse.ItemBooking(
                 lastBooking.getId(),
                 lastBooking.getBooker().getId()));
 
-        itemDtoResponse.setNextBooking(new ItemDtoResponse.ItemBooking(
+        itemDtoResponse.setNextBooking(nextBooking == null ? null : new ItemDtoResponse.ItemBooking(
                 nextBooking.getId(),
                 nextBooking.getBooker().getId()));
-    }
+
         log.info("ItemService: findById implementation. User ID {}, item ID {}.", userId, itemId);
         return itemDtoResponse;
     }
