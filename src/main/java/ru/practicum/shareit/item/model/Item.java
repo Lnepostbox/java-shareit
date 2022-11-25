@@ -7,8 +7,6 @@ import javax.persistence.*;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @Table(name = "items", schema = "public")
 public class Item {
@@ -18,19 +16,16 @@ public class Item {
     @Column(name = "item_id")
     private Long id;
 
-    @Column(name = "item_name")
+    @Column(name = "item_name", nullable = false)
     private String name;
 
-    @Column(name = "description")
+    @Column(name = "description", length = 512, nullable = false)
     private String description;
 
-    @Column(name = "available")
+    @Column(name = "available", nullable = false)
     private Boolean available;
 
-    @OneToOne(optional = false)
+    @ManyToOne
     @JoinColumn(name = "owner_id")
     private User owner;
-
-    @Column(name = "request_id")
-    private Long request;
 }

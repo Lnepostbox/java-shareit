@@ -8,19 +8,19 @@ import ru.practicum.shareit.item.model.Comment;
 public class CommentMapper {
 
     public static Comment toComment(CommentDto commentDto) {
-        return new Comment(
-                commentDto.getId(),
-                commentDto.getText(),
-                null,
-                null,
-                commentDto.getCreated());
+        Comment comment = new Comment();
+        comment.setId(commentDto.getId());
+        comment.setText(commentDto.getText());
+        comment.setCreated(commentDto.getCreated());
+        return comment;
     }
 
     public static CommentDto toCommentDto(Comment comment) {
-        return new CommentDto(
-                comment.getId(),
-                comment.getText(),
-                comment.getAuthor().getName(),
-                comment.getCreated());
+        CommentDto commentDto = new CommentDto();
+        commentDto.setId(comment.getId());
+        commentDto.setText(comment.getText());
+        commentDto.setAuthorName(comment.getAuthor().getName());
+        commentDto.setCreated(comment.getCreated());
+        return commentDto;
     }
 }

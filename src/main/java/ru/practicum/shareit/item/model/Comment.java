@@ -7,8 +7,6 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @Table(name = "comments", schema = "public")
 public class Comment {
@@ -21,11 +19,11 @@ public class Comment {
     @Column(name = "comment_text", nullable = false)
     private String text;
 
-    @ManyToOne(optional = false)
+    @ManyToOne
     @JoinColumn(name = "item_id")
     private Item item;
 
-    @ManyToOne(optional = false)
+    @ManyToOne
     @JoinColumn(name = "author_id")
     private User author;
 

@@ -6,10 +6,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-@EqualsAndHashCode
-@NoArgsConstructor
-@AllArgsConstructor
-public class BookingDto {
+public class BookingDtoResponse {
 
     private Long id;
 
@@ -24,16 +21,15 @@ public class BookingDto {
     private Status status;
 
     @Data
-    @Builder
-    public static class Booker {
+    public static class Item {
         private final long id;
         private final String name;
     }
 
     @Data
-    @Builder
-    public static class Item {
+    public static class Booker {
         private final long id;
         private final String name;
     }
+
 }

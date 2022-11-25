@@ -1,41 +1,33 @@
 package ru.practicum.shareit.item.mapper;
 
 import org.mapstruct.Mapper;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemDtoWithBooking;
+import ru.practicum.shareit.item.dto.ItemDtoRequest;
+import ru.practicum.shareit.item.dto.ItemDtoResponse;
 import ru.practicum.shareit.item.model.Item;
 import java.util.ArrayList;
 
 @Mapper
 public class ItemMapper {
 
-    public static Item toItem(ItemDto itemDto) {
-        return new Item(
-                itemDto.getId(),
-                itemDto.getName(),
-                itemDto.getDescription(),
-                itemDto.getAvailable(),
-                itemDto.getOwner(),
-                itemDto.getRequest());
+    public static Item toItem(ItemDtoRequest itemDtoRequest) {
+        Item item = new Item();
+        item.setId(itemDtoRequest.getId());
+        item.setName(itemDtoRequest.getName());
+        item.setDescription(itemDtoRequest.getDescription());
+        item.setAvailable(itemDtoRequest.getAvailable());
+        return item;
     }
 
-    public static ItemDto toItemDto(Item item) {
-        return new ItemDto(
-                item.getId(),
-                item.getName(),
-                item.getDescription(),
-                item.getAvailable(),
-                item.getOwner(),
-                item.getRequest());
-    }
-
-    public static ItemDtoWithBooking toItemDtoWithBooking(Item item) {
-        return new ItemDtoWithBooking(item.getId(),
-                item.getName(),
-                item.getDescription(),
-                item.getAvailable(),
-                null,
-                null,
-                new ArrayList<>());
+    public static ItemDtoResponse toItemDtoResponse(Item item) {
+        ItemDtoResponse itemDtoResponse = new ItemDtoResponse();
+        itemDtoResponse.setId(item.getId());
+        itemDtoResponse.setName(item.getName());
+        itemDtoResponse.setDescription(item.getDescription());
+        itemDtoResponse.setAvailable(item.getAvailable());
+        itemDtoResponse.setOwner(new ItemDtoResponse.ItemOwner(item.getOwner().getId(), item.getOwner().getName()));
+        itemDtoResponse.setLastBooking(null);
+        itemDtoResponse.setNextBooking(null);
+        itemDtoResponse.setComments(new ArrayList<>());
+        return itemDtoResponse;
     }
 }
