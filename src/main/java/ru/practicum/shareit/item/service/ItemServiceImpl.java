@@ -50,7 +50,7 @@ public class ItemServiceImpl implements ItemService {
                             lastBooking.getId(),
                             lastBooking.getBooker().getId()));
 
-                    itemDtoResponse.setNextBooking(nextBooking == null? null : new ItemDtoResponse.ItemBooking(
+                    itemDtoResponse.setNextBooking(nextBooking == null ? null : new ItemDtoResponse.ItemBooking(
                             nextBooking.getId(),
                             nextBooking.getBooker().getId()));
 
