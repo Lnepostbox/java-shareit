@@ -49,7 +49,7 @@ public class CommentServiceImpl implements CommentService {
         comment.setAuthor(user);
         comment.setCreated(LocalDateTime.now());
         Comment commentSave = commentRepository.save(comment);
-        log.info("CommentService: save implementation. User ID {}, itemId {}", userId, itemId);
+        log.info("CommentService: save implementation. User ID {}, itemId {}.", userId, itemId);
         return CommentMapper.toCommentDto(commentSave);
     }
 }
