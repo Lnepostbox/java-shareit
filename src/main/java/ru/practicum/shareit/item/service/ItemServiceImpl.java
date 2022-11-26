@@ -2,14 +2,18 @@ package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.model.Status;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDtoRequest;
 import ru.practicum.shareit.item.dto.ItemDtoResponse;
 import ru.practicum.shareit.item.mapper.CommentMapper;
 import ru.practicum.shareit.item.mapper.ItemMapper;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
@@ -17,6 +21,7 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.*;
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static ru.practicum.shareit.item.mapper.ItemMapper.toItemDtoResponse;
 
@@ -31,21 +36,45 @@ public class ItemServiceImpl implements ItemService {
     private final CommentRepository commentRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public List<ItemDtoResponse> findAllByOwnerId(Long userId) {
         List<Item> items = itemRepository.findAllByOwnerId(userId);
+        Map<Item, List<Comment>> commentsAll = commentRepository.findAllByItemIn(
+                items,
+                Sort.by(Sort.Direction.DESC, "created"))
+                .stream()
+                .collect(groupingBy(Comment::getItem, toList()));
+        Map<Item, List<Booking>> bookingsALL = bookingRepository.findAllByItemInAndStatus(
+                items,
+                Status.APPROVED,
+                Sort.by(Sort.Direction.DESC, "start"))
+                .stream()
+                .collect(groupingBy(Booking::getItem, toList()));
 
         List<ItemDtoResponse> itemsDtoWithBookingList = items
                 .stream()
                 .map(item -> {
                     ItemDtoResponse itemDtoResponse = ItemMapper.toItemDtoResponse(item);
+                    List<Comment> comments = commentsAll.getOrDefault(item, Collections.emptyList());
+                    List<Booking> bookings = bookingsALL.getOrDefault(item, Collections.emptyList());
+                    LocalDateTime now = LocalDateTime.now();
 
-                    itemDtoResponse.setComments(commentRepository.findAllByItemId(item.getId())
+                    Booking lastBooking = bookings.stream()
+                            .filter(b -> ((b.getEnd().isEqual(now) || b.getEnd().isBefore(now))
+                                    || (b.getStart().isEqual(now) || b.getStart().isBefore(now))))
+                            .findFirst()
+                            .orElse(null);
+
+                    Booking nextBooking = bookings.stream()
+                            .filter(b -> b.getStart().isAfter(now))
+                            .reduce((first, second) -> second)
+                            .orElse(null);
+
+                    itemDtoResponse.setComments(comments
                             .stream()
                             .map(CommentMapper::toCommentDto)
                             .collect(toList()));
 
-                    Booking lastBooking = bookingRepository.findLastBooking(LocalDateTime.now(), userId, item.getId());
-                    Booking nextBooking = bookingRepository.findNextBooking(LocalDateTime.now(), userId, item.getId());
                     itemDtoResponse.setLastBooking(lastBooking == null ? null : new ItemDtoResponse.ItemBooking(
                             lastBooking.getId(),
                             lastBooking.getBooker().getId()));
@@ -54,25 +83,26 @@ public class ItemServiceImpl implements ItemService {
                             nextBooking.getId(),
                             nextBooking.getBooker().getId()));
 
-            return itemDtoResponse;
-        })
-        .collect(toList());
+                    return itemDtoResponse;
+                })
+                .collect(toList());
 
         log.info("ItemService: findAllByOwnerId implementation. User ID {}.", userId);
         return itemsDtoWithBookingList;
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ItemDtoResponse> findAllByText(String text) {
         log.info("ItemService: findAllByText implementation. Text: {}.", text);
         return itemRepository.search(text)
                 .stream()
-                .filter(Item::getAvailable)
                 .map(ItemMapper::toItemDtoResponse)
                 .collect(toList());
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ItemDtoResponse findById(Long userId, Long itemId) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(String.format("User ID %s doesn't exist.", userId)));
@@ -101,6 +131,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional
     public ItemDtoResponse save(Long userId, ItemDtoRequest itemDtoRequest) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(String.format("User ID %s doesn't exist.", userId)));
@@ -112,10 +143,10 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional
     public ItemDtoResponse update(Long userId, Long itemId, ItemDtoRequest itemDtoRequest) {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException(String.format("Item ID %s doesn't exist.", itemId)));
-
         if (!item.getOwner().getId().equals(userId)) {
             throw new NotFoundException(String.format("User ID %s doesn't own item ID %s.", userId, itemId));
         }
@@ -130,10 +161,11 @@ public class ItemServiceImpl implements ItemService {
             item.setAvailable(itemDtoRequest.getAvailable());
         }
         log.info("ItemService: update implementation. User ID {}, itemId {}.", userId, itemId);
-        return ItemMapper.toItemDtoResponse(itemRepository.save(item));
+        return ItemMapper.toItemDtoResponse(item);
     }
 
     @Override
+    @Transactional
     public void delete(Long userId, Long itemId) {
         findById(userId, itemId);
         log.info("ItemService: delete implementation. Item ID {}.", itemId);

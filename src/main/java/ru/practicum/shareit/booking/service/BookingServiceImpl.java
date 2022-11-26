@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingDtoRequest;
 import ru.practicum.shareit.booking.dto.BookingDtoResponse;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
@@ -31,6 +32,7 @@ public class BookingServiceImpl implements BookingService {
     private final ItemRepository itemRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public List<BookingDtoResponse> findAllByState(Long userId, String stateText) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(String.format("User ID %s doesn't exist.", userId)));
@@ -99,6 +101,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<BookingDtoResponse> findAllByOwnerIdAndState(Long userId, String stateText) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(String.format("User ID %s doesn't exist.", userId)));
@@ -177,6 +180,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public BookingDtoResponse findById(Long userId, Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException(String.format("Booking ID %s doesn't exist.", bookingId)));
@@ -188,6 +192,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional
     public BookingDtoResponse save(Long userId, BookingDtoRequest bookingDtoRequest) {
         Booking booking = BookingMapper.toBooking(bookingDtoRequest);
         booking.setBooker(userRepository.findById(userId)
@@ -209,6 +214,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional
     public BookingDtoResponse updateState(Long userId, Long bookingId, Boolean approved) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException(String.format("Booking ID %s doesn't exist.", bookingId)));
@@ -225,10 +231,11 @@ public class BookingServiceImpl implements BookingService {
             booking.setStatus(Status.REJECTED);
         }
         log.info("BookingService: updateState implementation. User ID {}, booking ID {}.", userId, bookingId);
-        return toBookingDtoResponse(bookingRepository.save(booking));
+        return toBookingDtoResponse(booking);
         }
 
     @Override
+    @Transactional
     public void delete(Long bookingId) {
         bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException(String.format("Booking ID %s doesn't exist.", bookingId)));
