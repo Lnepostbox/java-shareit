@@ -1,31 +1,34 @@
 package ru.practicum.shareit.booking.mapper;
 
 import org.mapstruct.Mapper;
-import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.dto.BookingDtoRequest;
+import ru.practicum.shareit.booking.dto.BookingDtoResponse;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.booking.model.BookingStatus;
+import ru.practicum.shareit.booking.model.Status;
 
 @Mapper
 public class BookingMapper {
-    public static BookingDto toBookingDto(Booking booking) {
-        return new BookingDto(
-                booking.getId(),
-                booking.getStart(),
-                booking.getEnd(),
-                booking.getItem(),
-                booking.getBooker(),
-                booking.getStatus().toString()
-        );
+
+    public static BookingDtoResponse toBookingDtoResponse(Booking booking) {
+        BookingDtoResponse bookingDtoResponse = new BookingDtoResponse();
+        bookingDtoResponse.setId(booking.getId());
+        bookingDtoResponse.setStart(booking.getStart());
+        bookingDtoResponse.setEnd(booking.getEnd());
+        bookingDtoResponse.setItem(new BookingDtoResponse.Item(
+                booking.getItem().getId(),
+                booking.getItem().getName()));
+        bookingDtoResponse.setBooker(new BookingDtoResponse.Booker(
+                booking.getBooker().getId(),
+                booking.getBooker().getName()));
+        bookingDtoResponse.setStatus(booking.getStatus());
+        return bookingDtoResponse;
     }
 
-    public static Booking toBooking(BookingDto bookingDto) {
-        return new Booking(
-                bookingDto.getId(),
-                bookingDto.getStart(),
-                bookingDto.getEnd(),
-                bookingDto.getItem(),
-                bookingDto.getBooker(),
-                BookingStatus.valueOf(bookingDto.getStatus())
-        );
+    public static Booking toBooking(BookingDtoRequest bookingDtoRequest) {
+        Booking booking = new Booking();
+        booking.setStart(bookingDtoRequest.getStart());
+        booking.setEnd(bookingDtoRequest.getEnd());
+        booking.setStatus(Status.WAITING);
+        return booking;
     }
 }

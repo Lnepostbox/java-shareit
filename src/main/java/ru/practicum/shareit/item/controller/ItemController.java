@@ -2,13 +2,17 @@ package ru.practicum.shareit.item.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.mapper.ItemMapper;
-import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.ItemDtoRequest;
+import ru.practicum.shareit.item.dto.ItemDtoResponse;
+import ru.practicum.shareit.item.service.CommentService;
 import ru.practicum.shareit.item.service.ItemService;
+import ru.practicum.shareit.validator.Create;
+import ru.practicum.shareit.validator.Update;
+
 import javax.validation.Valid;
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -16,55 +20,64 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class ItemController {
+
     private final ItemService itemService;
+    private final CommentService commentService;
 
     @GetMapping
-    public List<ItemDto> findAllItems(@RequestHeader("X-Sharer-User-Id") Long userId) {
-        log.debug("ItemController: выполнено findAllItems - {}.", userId);
-        return ItemMapper.toItemDtoList(itemService.findAllItems(userId));
+    public List<ItemDtoResponse> findAllByOwnerId(@RequestHeader("X-Sharer-User-Id") Long userId) {
+        log.info("ItemController: findAllByOwnerId implementation. User ID {}.", userId);
+        return itemService.findAllByOwnerId(userId);
     }
 
-    @GetMapping("/{itemId}")
-    public ItemDto findItemById(@RequestHeader("X-Sharer-User-Id") Long userId, @PathVariable Long itemId) {
-        log.debug("ItemController: выполнено findItemById - {}.", itemId);
-        return ItemMapper.toItemDto(itemService.findItemById(userId, itemId));
-    }
-
-    @GetMapping("/search")
-    public List<ItemDto> findItemByParams(@RequestParam String text) {
+    @GetMapping(value = "/search")
+    public List<ItemDtoResponse> findAllByText(@RequestParam(name = "text") String text) {
         if (text.isBlank()) {
-            log.debug("ItemController: выполено findItemByParams - текст не обнаружен.");
-            return new ArrayList<>();
-        } else {
-            log.debug("ItemController: выполнено findItemByParams - {}.", text);
-            return ItemMapper.toItemDtoList(itemService.findItemsByText(text));
+            return List.of();
         }
+        log.info("ItemController: findAllByText implementation. Text: {}.", text);
+        return itemService.findAllByText(text);
+    }
+
+    @GetMapping(value = "/{itemId}")
+    public ItemDtoResponse findById(
+            @RequestHeader("X-Sharer-User-Id") Long userId,
+            @PathVariable Long itemId) {
+        log.info("ItemController: findById implementation. User ID {}, item ID {}.", userId, itemId);
+        return itemService.findById(userId, itemId);
     }
 
     @PostMapping
-    public ItemDto createItem(@RequestHeader("X-Sharer-User-Id") Long userId, @Valid @RequestBody ItemDto itemDto) {
-        log.debug("ItemController: выполнено createItem - {}.", itemDto);
-        Item item = ItemMapper.toItem(itemDto);
-        Long requestId = itemDto.getRequest();
-        return ItemMapper.toItemDto(itemService.createItem(userId, item, requestId));
+    public ItemDtoResponse save(
+            @RequestHeader("X-Sharer-User-Id") Long userId,
+            @Validated(Create.class) @RequestBody ItemDtoRequest itemDtoRequest) {
+        log.info("ItemController: save implementation. User ID {}.", userId);
+        return itemService.save(userId, itemDtoRequest);
     }
 
-    @PatchMapping("/{itemId}")
-    public ItemDto updateItem(
+    @PostMapping(value = "/{itemId}/comment")
+    public CommentDto saveComment(
             @RequestHeader("X-Sharer-User-Id") Long userId,
             @PathVariable Long itemId,
-            @RequestBody ItemDto itemDto
-    ) {
-        log.debug("ItemController: выполнено updateItem - {}.", itemDto);
-        Item item = ItemMapper.toItem(itemDto);
-        Long requestId = itemDto.getRequest();
-        return ItemMapper.toItemDto(itemService.updateItem(userId, itemId, item, requestId));
+            @Valid @RequestBody CommentDto commentDto) {
+        log.info("ItemController: saveComment implementation. User ID {}, itemId {}.", userId, itemId);
+        return commentService.save(userId, itemId, commentDto);
     }
 
-    @DeleteMapping("/{itemId}")
-    public void deleteItem(@RequestHeader("X-Sharer-User-Id") Long userId, @PathVariable Long itemId) {
-        log.debug("ItemController: выполнено deleteItem - {}.", itemId);
-        itemService.deleteItemById(userId, itemId);
+    @PatchMapping(value = "/{itemId}")
+    public ItemDtoResponse update(
+            @RequestHeader("X-Sharer-User-Id") Long userId,
+            @PathVariable Long itemId,
+            @Validated(Update.class) @RequestBody ItemDtoRequest itemDtoRequest) {
+        log.info("ItemController: update implementation. User ID {}, itemId {}.", userId, itemId);
+        return itemService.update(userId, itemId, itemDtoRequest);
     }
 
+    @DeleteMapping(value = "/{itemId}")
+    public void delete(
+            @RequestHeader("X-Sharer-User-Id") Long userId,
+            @PathVariable Long itemId) {
+        log.info("ItemController: delete implementation. User ID {}, itemId {}.", userId, itemId);
+        itemService.delete(userId, itemId);
+    }
 }

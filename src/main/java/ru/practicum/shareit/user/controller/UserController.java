@@ -5,12 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.mapper.UserMapper;
-import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
-import ru.practicum.shareit.user.validator.Create;
-import ru.practicum.shareit.user.validator.Update;
-
+import ru.practicum.shareit.validator.Create;
+import ru.practicum.shareit.validator.Update;
 import java.util.List;
 
 @RestController
@@ -18,37 +15,38 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class UserController {
+
     private final UserService userService;
 
     @GetMapping
-    public List<UserDto> findAllUsers() {
-        log.debug("UserController: выпонлено findAllUsers.");
-        return UserMapper.toUserDtoList(userService.findAllUsers());
+    public List<UserDto> findAll() {
+        log.info("UserController: finAll implementation.");
+        return userService.findAll();
     }
 
-    @GetMapping("/{userId}")
-    public UserDto findUserById(@PathVariable Long userId) {
-        log.debug("UserController: выпонлено findUserById - {}.", userId);
-        return UserMapper.toUserDto(userService.findUserById(userId));
+    @GetMapping(value = "/{userId}")
+    public UserDto findById(@PathVariable Long userId) {
+        log.info("UserController: findById implementation. User ID {}.", userId);
+        return userService.findById(userId);
     }
 
     @PostMapping
-    public UserDto createUser(@Validated(Create.class) @RequestBody UserDto userDto) {
-        log.debug("UserController: выпонлено createUser - {}.", userDto);
-        User user = UserMapper.toUser(userDto);
-        return UserMapper.toUserDto(userService.createUser(user));
+    public UserDto save(@Validated(Create.class) @RequestBody UserDto userDto) {
+        log.info("UserController: save implementation.");
+        return userService.save(userDto);
     }
 
-    @PatchMapping("/{userId}")
-    public UserDto updateUser(@PathVariable Long userId, @Validated(Update.class) @RequestBody UserDto userDto) {
-        log.debug("UserController: выпонлено updateUser - {}.", userDto);
-        User user = UserMapper.toUser(userDto);
-        return UserMapper.toUserDto(userService.updateUser(userId, user));
+    @PatchMapping(value = "/{userId}")
+    public UserDto update(
+            @PathVariable Long userId,
+            @Validated(Update.class) @RequestBody UserDto userDto) {
+        log.info("UserController: update implementation. User ID {}.", userId);
+        return userService.update(userId, userDto);
     }
 
-    @DeleteMapping("/{userId}")
-    public void deleteUserById(@PathVariable Long userId) {
-        log.debug("UserController: выпонлено deleteUserById - {}.", userId);
-        userService.deleteUserById(userId);
+    @DeleteMapping(value = "/{userId}")
+    public void delete(@PathVariable Long userId) {
+        log.info("UserController: delete implementation. User ID {}.", userId);
+        userService.delete(userId);
     }
 }

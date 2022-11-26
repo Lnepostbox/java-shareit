@@ -3,74 +3,69 @@ package ru.practicum.shareit.user.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exception.AlreadyExistsException;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 import java.util.List;
-import java.util.Optional;
+import static java.util.stream.Collectors.toList;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class UserServiceImpl implements UserService {
-    private final UserRepository userRep;
+
+    private final UserRepository userRepository;
 
     @Override
-    public List<User> findAllUsers() {
-        log.debug("UserService: выполнено findAllUsers.");
-        return userRep.findAllUsers();
+    @Transactional(readOnly = true)
+    public List<UserDto> findAll() {
+        log.info("UserService: findAll implementation.");
+        return userRepository.findAll()
+                .stream()
+                .map(UserMapper::toUserDto)
+                .collect(toList());
     }
 
     @Override
-    public User findUserById(Long id) {
-        User user = userRep.findUserById(id).orElseThrow(
-                () -> new NotFoundException(User.class.toString(), id)
-        );
-        log.debug("UserService: выполнено findUserById - {}.", user);
-        return user;
+    @Transactional(readOnly = true)
+    public UserDto findById(Long userId) {
+        log.info("UserService: findById implementation. User ID {}.", userId);
+        return UserMapper.toUserDto(userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(String.format("User ID %s doesn't exist.", userId))));
     }
 
     @Override
-    public User createUser(User user) {
-        if (user.getId() != null && userRep.userExists(user.getId())) {
-            throw new AlreadyExistsException(User.class.toString(), user.getId());
-        }
-        if (userRep.findAllUsers().contains(user)) {
-            throw new AlreadyExistsException(User.class.toString(), user.getEmail());
-        }
-        user = userRep.createUser(user);
-        log.debug("UserService: выполнено createUser - {}.", user);
-        return user;
+    @Transactional
+    public UserDto save(UserDto userDto) {
+        User user = userRepository.save(UserMapper.toUser(userDto));
+        log.info("UserService: save implementation. User ID {}.", user.getId());
+        return UserMapper.toUserDto(user);
     }
 
     @Override
-    public User updateUser(Long userId, User user) {
-        if (!userRep.userExists(userId)) {
-            throw new NotFoundException(User.class.toString(), userId);
+    @Transactional
+    public UserDto update(Long userId, UserDto userDto) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(String.format("User ID %s is already exist.", userId)));
+        if (userDto.getName() != null && !userDto.getName().isBlank()) {
+            user.setName(userDto.getName());
         }
-        User oldUser = findUserById(userId);
-        Optional<User> emailUser = userRep.findUserByEmail(user.getEmail());
-        if (emailUser.isPresent() && !emailUser.get().getId().equals(userId)) {
-            throw new AlreadyExistsException(User.class.toString(), user.getEmail());
+        if (userDto.getEmail() != null && !userDto.getEmail().isBlank()) {
+            user.setEmail(userDto.getEmail());
         }
-        if (user.getName() != null) {
-            oldUser.setName(user.getName());
-        }
-        if (user.getEmail() != null) {
-            oldUser.setEmail(user.getEmail());
-        }
-        log.debug("UserService: выполнено updateUser - {}.", user);
-        return userRep.updateUser(userId, oldUser);
+        log.info("UserService: update implementation. User ID {}.", userId);
+        return UserMapper.toUserDto(user);
     }
 
     @Override
-    public void deleteUserById(Long userId) {
-        if (!userRep.userExists(userId)) {
-            throw new NotFoundException(User.class.toString(), userId);
-        }
-        userRep.deleteUserById(userId);
-        log.debug("UserService: выполнено deleteUserById - ID {}.", userId);
+    @Transactional
+    public void delete(Long userId) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(String.format("User ID %s doesn't exist.", userId)));
+        log.info("UserService: delete implementation. User ID {}.", userId);
+        userRepository.deleteById(userId);
     }
 }
-
