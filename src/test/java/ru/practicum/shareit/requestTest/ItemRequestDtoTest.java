@@ -7,8 +7,6 @@ import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.boot.test.json.JsonContent;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 @JsonTest
