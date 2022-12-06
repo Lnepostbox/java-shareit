@@ -10,12 +10,15 @@ import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.booking.model.Status;
 import ru.practicum.shareit.exception.BookingException;
 import ru.practicum.shareit.validator.Create;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
 @RequestMapping(path = "/bookings")
 @RequiredArgsConstructor
 @Slf4j
+@Validated
 public class BookingController {
 
     private final BookingService bookingService;
@@ -23,24 +26,32 @@ public class BookingController {
     @GetMapping
     public List<BookingDtoResponse> findAllByState(
             @RequestHeader("X-Sharer-User-Id") Long userId,
-            @RequestParam(name = "state", defaultValue = "ALL") String stateText) {
+            @RequestParam(name = "state", defaultValue = "ALL") String stateText,
+            @RequestParam(value = "from", defaultValue = "0")
+            @PositiveOrZero int from,
+            @RequestParam(value = "size", defaultValue = "10")
+            @Positive int size) {
         if (Status.from(stateText) == null) {
             throw new IllegalArgumentException("Unknown state: " + stateText);
         }
         log.info("BookingController: findAllByState implementation. User ID {}, stateText {}.", userId, stateText);
-        return bookingService.findAllByState(userId, stateText);
+        return bookingService.findAllByState(userId, stateText, from, size);
     }
 
     @GetMapping(value = "/owner")
     public List<BookingDtoResponse> findAllByOwnerIdAndState(
             @RequestHeader("X-Sharer-User-Id") Long userId,
-            @RequestParam(name = "state", defaultValue = "ALL") String stateText) {
+            @RequestParam(name = "state", defaultValue = "ALL") String stateText,
+            @RequestParam(value = "from", defaultValue = "0")
+            @PositiveOrZero int from,
+            @RequestParam(value = "size", defaultValue = "10")
+            @Positive int size) {
         if (Status.from(stateText) == null) {
             throw new IllegalArgumentException("Unknown state: " + stateText);
         }
         log.info("BookingController: findAllByOwnerIdAndState implementation. User ID {}, stateText {}.",
                 userId, stateText);
-        return bookingService.findAllByOwnerIdAndState(userId, stateText);
+        return bookingService.findAllByOwnerIdAndState(userId, stateText, from, size);
     }
 
     @GetMapping(value = "/{bookingId}")

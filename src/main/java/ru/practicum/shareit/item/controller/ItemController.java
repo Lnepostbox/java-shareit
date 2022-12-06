@@ -11,8 +11,8 @@ import ru.practicum.shareit.item.service.CommentService;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.validator.Create;
 import ru.practicum.shareit.validator.Update;
-
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import java.util.List;
 
 @RestController
@@ -25,18 +25,28 @@ public class ItemController {
     private final CommentService commentService;
 
     @GetMapping
-    public List<ItemDtoResponse> findAllByOwnerId(@RequestHeader("X-Sharer-User-Id") Long userId) {
-        log.info("ItemController: findAllByOwnerId implementation. User ID {}.", userId);
-        return itemService.findAllByOwnerId(userId);
+    public List<ItemDtoResponse> findAllByOwnerId(
+            @RequestHeader("X-Sharer-User-Id") Long ownerId,
+            @RequestParam(defaultValue = "0")
+            @Min(value = 0, message = "Parameter from must not be negative") int from,
+            @RequestParam(defaultValue = "10")
+            @Min(value = 1, message = "Parameter size must be positive") int size) {
+        log.info("ItemController: findAllByOwnerId implementation. User ID {}.", ownerId);
+        return itemService.findAllByOwnerId(ownerId, from, size);
     }
 
     @GetMapping(value = "/search")
-    public List<ItemDtoResponse> findAllByText(@RequestParam(name = "text") String text) {
+    public List<ItemDtoResponse> findAllByText(
+            @RequestParam(name = "text") String text,
+            @RequestParam(defaultValue = "0")
+            @Min(value = 0, message = "Parameter from must not be negative") int from,
+            @RequestParam(defaultValue = "10")
+            @Min(value = 1, message = "Parameter size must be positive") int size) {
         if (text.isBlank()) {
             return List.of();
         }
         log.info("ItemController: findAllByText implementation. Text: {}.", text);
-        return itemService.findAllByText(text);
+        return itemService.findAllByText(text, from, size);
     }
 
     @GetMapping(value = "/{itemId}")

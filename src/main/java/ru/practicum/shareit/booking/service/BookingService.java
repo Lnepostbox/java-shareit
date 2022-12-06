@@ -6,9 +6,9 @@ import java.util.List;
 
 public interface BookingService {
 
-    List<BookingDtoResponse> findAllByState(Long userId, String stateText);
+    List<BookingDtoResponse> findAllByState(Long userId, String stateText, int from, int size);
 
-    List<BookingDtoResponse> findAllByOwnerIdAndState(Long userId, String stateText);
+    List<BookingDtoResponse> findAllByOwnerIdAndState(Long userId, String stateText, int from, int size);
 
     BookingDtoResponse findById(Long userId, Long bookingId);
 

@@ -28,6 +28,7 @@ public class ItemMapper {
         itemDtoResponse.setLastBooking(null);
         itemDtoResponse.setNextBooking(null);
         itemDtoResponse.setComments(new ArrayList<>());
+        itemDtoResponse.setRequestId(item.getRequest() == null ? null : item.getRequest().getId());
         return itemDtoResponse;
     }
 }

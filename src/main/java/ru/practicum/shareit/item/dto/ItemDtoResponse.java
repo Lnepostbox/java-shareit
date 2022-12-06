@@ -23,6 +23,8 @@ public class ItemDtoResponse {
 
     private List<CommentDto> comments;
 
+    private Long requestId;
+
     @Data
     public static class ItemOwner {
         private final long id;

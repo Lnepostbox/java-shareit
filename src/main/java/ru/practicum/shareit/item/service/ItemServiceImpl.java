@@ -2,6 +2,7 @@ package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +18,8 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 import java.time.LocalDateTime;
@@ -34,11 +37,12 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
+    private final ItemRequestRepository itemRequestRepository;
 
     @Override
     @Transactional(readOnly = true)
-    public List<ItemDtoResponse> findAllByOwnerId(Long userId) {
-        List<Item> items = itemRepository.findAllByOwnerId(userId);
+    public List<ItemDtoResponse> findAllByOwnerId(Long ownerId, int from, int size) {
+        List<Item> items = itemRepository.findAllByOwnerId(ownerId, PageRequest.of(from, size));
         Map<Item, List<Comment>> commentsAll = commentRepository.findAllByItemIn(
                 items,
                 Sort.by(Sort.Direction.DESC, "created"))
@@ -87,16 +91,25 @@ public class ItemServiceImpl implements ItemService {
                 })
                 .collect(toList());
 
-        log.info("ItemService: findAllByOwnerId implementation. User ID {}.", userId);
+        log.info("ItemService: findAllByOwnerId implementation. User ID {}.", ownerId);
         return itemsDtoWithBookingList;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<ItemDtoResponse> findAllByText(String text) {
+    public List<ItemDtoResponse> findAllByText(String text, int from, int size) {
         log.info("ItemService: findAllByText implementation. Text: {}.", text);
-        return itemRepository.search(text)
+        return itemRepository.search(text, PageRequest.of(from, size))
                 .stream()
+                .map(ItemMapper::toItemDtoResponse)
+                .collect(toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ItemDtoResponse> findAllByRequestId(Long requestId) {
+        List<Item> items = itemRepository.findAllByRequestId(requestId);
+        return items.stream()
                 .map(ItemMapper::toItemDtoResponse)
                 .collect(toList());
     }
@@ -135,8 +148,12 @@ public class ItemServiceImpl implements ItemService {
     public ItemDtoResponse save(Long userId, ItemDtoRequest itemDtoRequest) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(String.format("User ID %s doesn't exist.", userId)));
+        ItemRequest itemRequest = itemDtoRequest.getRequestId() == null ? null : itemRequestRepository
+                .findById(itemDtoRequest.getRequestId())
+                .orElseThrow(() -> new NotFoundException("ItemRequest not found."));
         Item item = ItemMapper.toItem(itemDtoRequest);
         item.setOwner(user);
+        item.setRequest(itemRequest);
         Item itemSave = itemRepository.save(item);
         log.info("ItemService: save implementation. User ID {}, item ID {}.", userId, itemSave.getId());
         return ItemMapper.toItemDtoResponse(itemSave);
@@ -171,4 +188,5 @@ public class ItemServiceImpl implements ItemService {
         log.info("ItemService: delete implementation. Item ID {}.", itemId);
         itemRepository.deleteById(itemId);
     }
+
 }
