@@ -1,94 +1,58 @@
 package ru.practicum.shareit.userTest;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.controller.UserController;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.mapper.UserMapper;
-import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.service.UserService;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@WebMvcTest(UserController.class)
-@AutoConfigureMockMvc
-class UserControllerTest {
-
-    @MockBean
-    UserService userService;
-
+@SpringBootTest
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+public class UserControllerTest {
     @Autowired
-    MockMvc mockMvc;
+    private UserController userController;
 
-    @Autowired
-    ObjectMapper mapper;
+    private UserDto user;
 
-    @Test
-    void shouldFindAllUsers() throws Exception {
-        List<UserDto> users = List.of(UserMapper.toUserDto(new User(null, "testName", "test@mail.com")));
-
-        Mockito.when(userService.findAll())
-                .thenReturn(users);
-
-        mockMvc.perform(get("/users")
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", Matchers.hasSize(1)));
-
-        Mockito.verify(userService, Mockito.times(1))
-                .findAll();
+    @BeforeEach
+    void init() {
+        user = new UserDto(null, "testName", "user@email.com");
     }
 
     @Test
-    void shouldSaveUser() throws Exception {
-        UserDto userDto = new UserDto(null, "testName", "test@mail.com");
-
-        Mockito.when(userService.save(Mockito.any(UserDto.class)))
-                .thenReturn(userDto);
-
-        mockMvc.perform(post("/users")
-                        .content(mapper.writeValueAsString(userDto))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name", Matchers.is(userDto.getName()), String.class))
-                .andExpect(jsonPath("$.email", Matchers.is(userDto.getEmail()), String.class));
-
-        Mockito.verify(userService, Mockito.times(1))
-                .save(Mockito.any(UserDto.class));
+    void saveTest() {
+        UserDto userDto = userController.save(user);
+        assertEquals(userDto.getId(), userController.findById(userDto.getId()).getId());
     }
 
     @Test
-    void shouldUpdateUser() throws Exception {
-        UserDto userDto = new UserDto(null, "testName", "test@mail.com");
+    void updateTest() {
+        userController.save(user);
+        UserDto userDto = new UserDto(null, "testNameUpdate", "update@email.com");
+        userController.update(1L, userDto);
+        assertEquals(userDto.getEmail(), userController.findById(1L).getEmail());
+    }
 
-        Mockito.when(userService.update(Mockito.anyLong(), Mockito.any(UserDto.class)))
-                .thenReturn(userDto);
+    @Test
+    void updateTestThrowsException() {
+        assertThrows(NotFoundException.class, () -> userController.update(1L, user));
+    }
 
-        mockMvc.perform(patch("/users/1")
-                        .content(mapper.writeValueAsString(userDto))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name", Matchers.is(userDto.getName()), String.class))
-                .andExpect(jsonPath("$.email", Matchers.is(userDto.getEmail()), String.class));
+    @Test
+    void deleteTest() {
+        UserDto userDto = userController.save(user);
+        assertEquals(1, userController.findAll().size());
+        userController.delete(userDto.getId());
+        assertEquals(0, userController.findAll().size());
+    }
 
-        Mockito.verify(userService, Mockito.times(1))
-                .update(Mockito.anyLong(), Mockito.any(UserDto.class));
+    @Test
+    void findByIdTestThrowsException() {
+        assertThrows(NotFoundException.class, () -> userController.findById(1L));
     }
 }

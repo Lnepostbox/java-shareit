@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-class CommentServiceImplTest {
+class CommentServiceImplMockTest {
 
     CommentService commentService;
     ItemRepository itemRepository;
@@ -43,7 +43,7 @@ class CommentServiceImplTest {
     }
 
     @Test
-    void shouldSaveCommentWithRightParameters() {
+    void saveTest() {
         CommentDto commentDto = new CommentDto(null, "text", null, null);
         CommentDto commentInfoDto = new CommentDto(1L, "text", "testName", LocalDateTime.now());
         User user = new User(1L, "testName", "test@mail.com");

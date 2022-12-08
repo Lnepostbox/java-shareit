@@ -21,7 +21,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-class ItemServiceImplTest {
+class ItemServiceImplMockTest {
 
     ItemService itemService;
     ItemRepository itemRepository;
@@ -47,7 +47,7 @@ class ItemServiceImplTest {
     }
 
     @Test
-    void shouldSaveItemWithRightParameters() {
+    void saveTest() {
         User user = new User(1L, "testName", "test@mail.com");
         Item item = new Item(1L, "testName", "testDescription", true, user, null);
         ItemDtoRequest itemDto =
@@ -70,7 +70,7 @@ class ItemServiceImplTest {
     }
 
     @Test
-    void shouldThrowExceptionForSaveItemWithWrongUserId() {
+    void saveTestThrowsExceptionWithWrongUserId() {
         ItemDtoRequest itemDto =
                 new ItemDtoRequest(null, "testName", "testDescription", true, null);
 
@@ -84,7 +84,7 @@ class ItemServiceImplTest {
     }
 
     @Test
-    void shouldSaveItemWithRequest() {
+    void saveWithRequestTest() {
         User user1 = new User(1L, "testName1", "test1@mail.com");
         User user2 = new User(2L, "testName2", "test2@mail.com");
         ItemRequest itemRequest =
@@ -114,7 +114,7 @@ class ItemServiceImplTest {
     }
 
     @Test
-    void shouldThrowExceptionForSaveItemWithWrongRequestId() {
+    void saveTestThrowsExceptionWithWrongRequestId() {
         User user = new User(1L, "testName", "test@mail.com");
         ItemDtoRequest itemDto =
                 new ItemDtoRequest(null, "testName", "testDescription", true, 1L);
@@ -132,7 +132,7 @@ class ItemServiceImplTest {
     }
 
     @Test
-    void shouldUpdateItemWithRightParameters() {
+    void updateTest() {
         User user = new User(1L, "testName", "test@mail.com");
         Item item = new Item(1L, "testName", "testDescription", true, user, null);
         Item itemUpdate =
@@ -162,7 +162,7 @@ class ItemServiceImplTest {
     }
 
     @Test
-    void shouldReturnEmptyListForFindAllByText() {
+    void findAllByTextTestWithEmptyList() {
         User user = new User(1L, "testName", "test@mail.com");
         String text = "";
 

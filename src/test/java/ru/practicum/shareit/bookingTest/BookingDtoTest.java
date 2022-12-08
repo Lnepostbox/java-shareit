@@ -15,7 +15,7 @@ public class BookingDtoTest {
     JacksonTester<BookingDtoResponse> json;
 
     @Test
-    void testBookingDto() throws Exception {
+    void bookingDtoTest() throws Exception {
         BookingDtoResponse bookingDto = new BookingDtoResponse(
                 1L,
                 LocalDateTime.of(2022, 12, 12, 10, 10, 1),

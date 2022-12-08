@@ -1,92 +1,216 @@
 package ru.practicum.shareit.bookingTest;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import ru.practicum.shareit.booking.controller.BookingController;
 import ru.practicum.shareit.booking.dto.BookingDtoRequest;
 import ru.practicum.shareit.booking.dto.BookingDtoResponse;
 import ru.practicum.shareit.booking.model.Status;
-import ru.practicum.shareit.booking.service.BookingService;
-import java.nio.charset.StandardCharsets;
+import ru.practicum.shareit.exception.BookingException;
+import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.exception.ValidationException;
+import ru.practicum.shareit.item.controller.ItemController;
+import ru.practicum.shareit.item.dto.ItemDtoRequest;
+import ru.practicum.shareit.item.dto.ItemDtoResponse;
+import ru.practicum.shareit.user.controller.UserController;
+import ru.practicum.shareit.user.dto.UserDto;
 import java.time.LocalDateTime;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@WebMvcTest(BookingController.class)
-@AutoConfigureMockMvc
-class BookingControllerTest {
-
-    @MockBean
-    BookingService bookingService;
+@SpringBootTest
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+public class BookingControllerTest {
+    @Autowired
+    private BookingController bookingController;
 
     @Autowired
-    MockMvc mockMvc;
+    private UserController userController;
 
     @Autowired
-    ObjectMapper mapper;
+    private ItemController itemController;
 
-    private static final String SHAREIT_HEADER = "X-Sharer-User-Id";
+    private ItemDtoRequest itemDtoRequest;
 
-    @Test
-    void shouldSaveBooking() throws Exception {
-        BookingDtoResponse bookingDto = new BookingDtoResponse(
-                1L,
-                LocalDateTime.now().plusHours(1),
-                LocalDateTime.now().plusHours(2),
+    private UserDto userDto;
+
+    private UserDto userDto1;
+
+    private BookingDtoRequest bookingDtoRequest;
+
+    @BeforeEach
+    void init() {
+        itemDtoRequest = new ItemDtoRequest(
                 null,
-                null,
+                "testName",
+                "tasteDescription",
+                true,
                 null);
 
-        Mockito.when(bookingService.save(Mockito.anyLong(), Mockito.any(BookingDtoRequest.class)))
-                .thenReturn(bookingDto);
+        userDto = new UserDto(null, "testName", "test@mail.com");
+        userDto1 = new UserDto(null, "testName1", "test1@mail.com");
 
-        mockMvc.perform(post("/bookings")
-                        .header(SHAREIT_HEADER, 1L)
-                        .content(mapper.writeValueAsString(bookingDto))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", Matchers.is(bookingDto.getId()), Long.class));
+        bookingDtoRequest = new BookingDtoRequest(
+                null,
+                LocalDateTime.of(2023, 10, 24, 12, 30),
+                LocalDateTime.of(2023, 11, 10, 13, 0),
+                null);
     }
 
     @Test
-    void shouldUpdateState() throws Exception {
-        BookingDtoResponse bookingDto = new BookingDtoResponse(1L,
-                LocalDateTime.now(),
-                LocalDateTime.now(),
-                new BookingDtoResponse.Item(1L, "testName"),
-                new BookingDtoResponse.Booker(1L, "testName"),
-                Status.APPROVED);
+    void saveTest() {
+        UserDto user = userController.save(userDto);
+        ItemDtoResponse item = itemController.save(user.getId(), itemDtoRequest);
+        bookingDtoRequest.setItemId(item.getId());
+        UserDto user1 = userController.save(userDto1);
+        BookingDtoResponse booking = bookingController.save(user1.getId(), bookingDtoRequest);
+        assertEquals(1L, bookingController.findById(user1.getId(), booking.getId()).getId());
+    }
 
-        Mockito.when(bookingService.updateState(Mockito.anyLong(), Mockito.anyLong(), Mockito.anyBoolean()))
-                .thenReturn(bookingDto);
+    @Test
+    void saveTestWithWrongUser() {
+        assertThrows(NotFoundException.class,
+                () -> bookingController.save(1L, bookingDtoRequest));
+    }
 
-        mockMvc.perform(patch("/bookings/1?approved=true")
-                        .header(SHAREIT_HEADER, 1L)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", Matchers.is(bookingDto.getId()), Long.class))
-                .andExpect(jsonPath("$.status",
-                        Matchers.is(bookingDto.getStatus().toString()),
-                        Boolean.class))
-                .andExpect(jsonPath("$.booker.id",
-                        Matchers.is(bookingDto.getBooker().getId()),
-                        Long.class))
-                .andExpect(jsonPath("$.item.id",
-                        Matchers.is(bookingDto.getItem().getId()),
-                        Long.class));
+    @Test
+    void saveTestWithWrongItem() {
+        bookingDtoRequest.setItemId(30L);
+        UserDto user1 = userController.save(userDto1);
+        assertThrows(NotFoundException.class,
+                () -> bookingController.save(user1.getId(), bookingDtoRequest));
+    }
+
+    @Test
+    void saveTestWithOwner() {
+        UserDto user = userController.save(userDto);
+        ItemDtoResponse item = itemController.save(user.getId(), itemDtoRequest);
+        bookingDtoRequest.setItemId(item.getId());
+        assertThrows(NotFoundException.class,
+                () -> bookingController.save(user.getId(), bookingDtoRequest));
+    }
+
+    @Test
+    void saveTestWithUnavailableItem() {
+        UserDto user = userController.save(userDto);
+        itemDtoRequest.setAvailable(false);
+        ItemDtoResponse item = itemController.save(user.getId(), itemDtoRequest);
+        bookingDtoRequest.setItemId(item.getId());
+        UserDto user1 = userController.save(userDto1);
+        assertThrows(ValidationException.class,
+                () -> bookingController.save(user1.getId(), bookingDtoRequest));
+    }
+
+    @Test
+    void saveTestWithWrongEndDate() {
+        UserDto user = userController.save(userDto);
+        ItemDtoResponse item = itemController.save(user.getId(), itemDtoRequest);
+        bookingDtoRequest.setItemId(item.getId());
+        UserDto user1 = userController.save(userDto1);
+        bookingDtoRequest.setEnd(LocalDateTime.of(2022, 9, 24, 12, 30));
+        assertThrows(BookingException.class,
+                () -> bookingController.save(user1.getId(), bookingDtoRequest));
+    }
+
+    @Test
+    void updateStateTest() {
+        UserDto user = userController.save(userDto);
+        ItemDtoResponse item = itemController.save(user.getId(), itemDtoRequest);
+        bookingDtoRequest.setItemId(item.getId());
+        UserDto user1 = userController.save(userDto1);
+        BookingDtoResponse booking = bookingController.save(user1.getId(), bookingDtoRequest);
+        assertEquals(Status.WAITING, bookingController.findById(user1.getId(), booking.getId()).getStatus());
+        bookingController.updateState(user.getId(), booking.getId(), true);
+        assertEquals(Status.APPROVED, bookingController.findById(user1.getId(), booking.getId()).getStatus());
+    }
+
+    @Test
+    void updateStateTestWithWrongBooking() {
+        assertThrows(NotFoundException.class,
+                () -> bookingController.updateState(1L, 1L, true));
+    }
+
+    @Test
+    void updateStateTestWithWrongUser() {
+        UserDto user = userController.save(userDto);
+        ItemDtoResponse item = itemController.save(user.getId(), itemDtoRequest);
+        bookingDtoRequest.setItemId(item.getId());
+        UserDto user1 = userController.save(userDto1);
+        bookingController.save(user1.getId(), bookingDtoRequest);
+        assertThrows(NotFoundException.class,
+                () -> bookingController.updateState(1L, 2L, true));
+    }
+
+    @Test
+    void updateStateToBookingWithWrongStatus() {
+        UserDto user = userController.save(userDto);
+        ItemDtoResponse item = itemController.save(user.getId(), itemDtoRequest);
+        bookingDtoRequest.setItemId(item.getId());
+        UserDto user1 = userController.save(userDto1);
+        bookingController.save(user1.getId(), bookingDtoRequest);
+        bookingController.updateState(1L, 1L, true);
+        assertThrows(BookingException.class,
+                () -> bookingController.updateState(1L, 1L, true));
+    }
+
+    @Test
+    void findAllByUserTest() {
+        UserDto user = userController.save(userDto);
+        ItemDtoResponse item = itemController.save(user.getId(), itemDtoRequest);
+        bookingDtoRequest.setItemId(item.getId());
+        UserDto user1 = userController.save(userDto1);
+        BookingDtoResponse booking = bookingController.save(user1.getId(), bookingDtoRequest);
+        assertEquals(1, bookingController.
+                findAllByState(user1.getId(), "WAITING", 0, 10).size());
+        assertEquals(1, bookingController.
+                findAllByState(user1.getId(), "ALL", 0, 10).size());
+        assertEquals(0, bookingController.
+                findAllByState(user1.getId(), "PAST", 0, 10).size());
+        assertEquals(0, bookingController.
+                findAllByState(user1.getId(), "CURRENT", 0, 10).size());
+        assertEquals(1, bookingController.
+                findAllByState(user1.getId(), "FUTURE", 0, 10).size());
+        assertEquals(0, bookingController.
+                findAllByState(user1.getId(), "REJECTED", 0, 10).size());
+        bookingController.updateState(booking.getId(), user.getId(), true);
+        assertEquals(0, bookingController.
+                findAllByState(user.getId(), "CURRENT", 0, 10).size());
+        assertEquals(1, bookingController.
+                findAllByOwnerIdAndState(user.getId(), "ALL", 0, 10).size());
+        assertEquals(0, bookingController.
+                findAllByOwnerIdAndState(user.getId(), "WAITING", 0, 10).size());
+        assertEquals(1, bookingController.
+                findAllByOwnerIdAndState(user.getId(), "FUTURE", 0, 10).size());
+        assertEquals(0, bookingController.
+                findAllByOwnerIdAndState(user.getId(), "REJECTED", 0, 10).size());
+        assertEquals(0, bookingController.
+                findAllByOwnerIdAndState(user.getId(), "PAST", 0, 10).size());
+    }
+
+    @Test
+    void findAllByWrongUserTest() {
+        assertThrows(NotFoundException.class, () -> bookingController
+                .findAllByState(1L, "ALL", 0, 10));
+        assertThrows(NotFoundException.class, () -> bookingController
+                .findAllByOwnerIdAndState(1L, "ALL", 0, 10));
+    }
+
+    @Test
+    void findByIdTestWithWrongId() {
+        assertThrows(NotFoundException.class,
+                () -> bookingController.findById(1L, 1L));
+    }
+
+    @Test
+    void findByWrongUserTest() {
+        UserDto user = userController.save(userDto);
+        ItemDtoResponse item = itemController.save(user.getId(), itemDtoRequest);
+        bookingDtoRequest.setItemId(item.getId());
+        UserDto user1 = userController.save(userDto1);
+        bookingController.save(user1.getId(), bookingDtoRequest);
+        assertThrows(NotFoundException.class, () -> bookingController.findById(1L, 10L));
     }
 }

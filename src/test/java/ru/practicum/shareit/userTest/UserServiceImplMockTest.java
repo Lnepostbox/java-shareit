@@ -10,9 +10,11 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 import ru.practicum.shareit.user.service.UserService;
 import ru.practicum.shareit.user.service.UserServiceImpl;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
-class UserServiceImplTest {
+class UserServiceImplMockTest {
 
     UserRepository userRepository;
     UserService userService;
@@ -24,7 +26,20 @@ class UserServiceImplTest {
     }
 
     @Test
-    void shouldReturnUserForFindByIdWithRightParameters() {
+    void findAllTest() {
+        List<User> users = new ArrayList<>();
+        users.add(new User(1L, "testName", "test@mail.com"));
+        Mockito.when(userRepository.findAll())
+                .thenReturn(users);
+
+        List<UserDto> usersDto = userService.findAll();
+
+        Assertions.assertNotNull(usersDto);
+        Assertions.assertEquals(1, usersDto.size());
+    }
+
+    @Test
+    void findByIdTest() {
         User user = new User(1L, "testName", "test@mail.com");
 
         Mockito.when(userRepository.findById(Mockito.anyLong()))
@@ -39,7 +54,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void shouldThrowExceptionForFindByIdWithWrongUserId() {
+    void FindByIdTestThrowsException() {
         Mockito.when(userRepository.findById(Mockito.anyLong()))
                 .thenReturn(Optional.empty());
 
@@ -50,7 +65,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void shouldSaveUserForSaveWithRightParameters() {
+    void saveTest() {
         User user = new User(1L, "testName", "test@mail.com");
         UserDto userDto = new UserDto(null, "testName", "test@mail.com");
 
@@ -66,7 +81,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void shouldUpdateUserForUpdateWithRightParameters() {
+    void updateTest() {
         User user = new User(1L, "testName", "test@mail.com");
         User updateUser = new User(1L, "testNameUpdate", "testUpdate@mail.com");
         UserDto userDto = new UserDto(null, "testNameUpdate", "testUpdate@mail.com");
@@ -86,7 +101,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void shouldThrowExceptionForUpdateWithWrongUserId() {
+    void updateTestThrowsException() {
         UserDto userDto = new UserDto(null, "testNameUpdate", "testUpdate@mail.com");
 
         Mockito.when(userRepository.findById(Mockito.anyLong()))

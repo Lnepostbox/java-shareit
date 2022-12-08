@@ -55,7 +55,7 @@ class ItemRequestRepositoryTest {
     }
 
     @Test
-    void shouldFindAllByRequestorId() {
+    void findAllByRequestorIdOrderByCreatedAscTest() {
         List<ItemRequest> requests = itemRequestRepository.findAllByRequestorIdOrderByCreatedAsc(user1.getId());
 
         Assertions.assertFalse(requests.isEmpty());
@@ -63,7 +63,7 @@ class ItemRequestRepositoryTest {
     }
 
     @Test
-    void shouldFindAllByRequestorIdNotLike() {
+    void findAllByRequestorIdNotLikeTest() {
         List<ItemRequest> requests = itemRequestRepository.findAllByRequestorIdNotLike(
                 user1.getId(),
                 Pageable.unpaged());

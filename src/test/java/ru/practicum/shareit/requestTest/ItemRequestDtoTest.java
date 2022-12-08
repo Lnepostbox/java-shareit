@@ -15,7 +15,7 @@ public class ItemRequestDtoTest {
     JacksonTester<ItemRequestDto> json;
 
     @Test
-    void testItemRequestDto() throws Exception {
+    void itemRequestDtoTest() throws Exception {
         ItemRequestDto itemRequestDto = new ItemRequestDto(
                 1L,
               "testDescription",

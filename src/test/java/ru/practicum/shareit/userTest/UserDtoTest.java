@@ -18,7 +18,7 @@ class UserDtoTest {
     private JacksonTester<UserDto> jackson;
 
     @Test
-    void shouldSerializeUser() throws IOException {
+    void userDtoTest() throws IOException {
         User user = new User(1L, "testName", "test@mail.com");
         UserDto userDto = UserMapper.toUserDto(user);
 

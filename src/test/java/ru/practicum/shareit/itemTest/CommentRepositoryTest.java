@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Sort;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
@@ -13,6 +14,7 @@ import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @DataJpaTest
@@ -45,7 +47,7 @@ class CommentRepositoryTest {
     }
 
     @Test
-    void shouldReturnCommentListByItemId() {
+    void findAllByItemIdTest() {
         List<Comment> results = commentRepository.findAllByItemId(item1.getId());
 
         Assertions.assertNotNull(results);
@@ -53,11 +55,21 @@ class CommentRepositoryTest {
     }
 
     @Test
-    void shouldReturnEmptyListByItemId() {
+    void findAllByItemIdTestWithEmptyList() {
         List<Comment> results = commentRepository.findAllByItemId(item2.getId());
 
         Assertions.assertNotNull(results);
         Assertions.assertEquals(0, results.size());
+    }
+
+    @Test
+    void findAllByItemInTest() {
+        List<Item> items = new ArrayList<>();
+        items.add(item1);
+        List<Comment> results = commentRepository.findAllByItemIn(items, Sort.unsorted());
+
+        Assertions.assertNotNull(results);
+        Assertions.assertEquals(1, results.size());
     }
 
     @AfterEach

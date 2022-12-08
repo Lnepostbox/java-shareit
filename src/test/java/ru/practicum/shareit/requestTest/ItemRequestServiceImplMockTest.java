@@ -19,7 +19,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-class ItemRequestServiceImplTest {
+class ItemRequestServiceImplMockTest {
 
     ItemRequestService itemRequestService;
     ItemRequestRepository itemRequestRepository;
@@ -35,7 +35,7 @@ class ItemRequestServiceImplTest {
     }
 
     @Test
-    void shouldReturnRequestsForFindByUserIdWithRightParameters() {
+    void findAllByUserIdTest() {
         List<ItemRequest> requests = List.of(
                 new ItemRequest(1L, "testDescription", null, LocalDateTime.now()));
 
@@ -57,7 +57,7 @@ class ItemRequestServiceImplTest {
     }
 
     @Test
-    void shouldThrowExceptionForFindByUserIdWithWrongUserId() {
+    void findAllByUserIdTestThrowsExceptionWithWrongUserId() {
         Mockito.when(userRepository.findById(Mockito.anyLong()))
                 .thenReturn(Optional.empty());
 
@@ -69,7 +69,7 @@ class ItemRequestServiceImplTest {
     }
 
     @Test
-    void shouldReturnRequestForFindByIdWithRightParameters() {
+    void findByIdTest() {
         User user = new User(1L, "testName", "test@mail.com");
         ItemRequest request = new ItemRequest(1L, "testDescription", user, LocalDateTime.now());
         Mockito.when(userRepository.findById(user.getId()))
@@ -86,7 +86,7 @@ class ItemRequestServiceImplTest {
     }
 
     @Test
-    void shouldThrowExceptionForFindByIdWithWrongUserId() {
+    void findByIdTestThrowsExceptionWithWrongUserId() {
         User user = new User(1L, "testName", "test@mail.com");
         ItemRequest request = new ItemRequest(1L, "testDescription", user, LocalDateTime.now());
 
@@ -101,7 +101,7 @@ class ItemRequestServiceImplTest {
     }
 
     @Test
-    void shouldThrowExceptionForFindByIdWithWrongRequestId() {
+    void findByIdTestThrowsExceptionWithWrongRequestId() {
         User user = new User(1L, "testName", "test@mail.com");
         ItemRequest request = new ItemRequest(1L, "testDescription", user, LocalDateTime.now());
 
@@ -119,7 +119,7 @@ class ItemRequestServiceImplTest {
     }
 
     @Test
-    void shouldReturnRequestForSaveWithRightParameters() {
+    void saveTest() {
         ItemRequestDto itemRequestDto = new ItemRequestDto(null, "testDescription", null, null);
 
         User user = new User(1L, "test", "test@gmail.com");
@@ -139,7 +139,7 @@ class ItemRequestServiceImplTest {
     }
 
     @Test
-    void shouldThrowExceptionWithWrongUserId() {
+    void saveTestThrowsExceptionWithWrongUserId() {
         ItemRequestDto itemRequestDto = new ItemRequestDto(null, "testDescription", null, null);
 
         Mockito.when(userRepository.findById(Mockito.anyLong()))
