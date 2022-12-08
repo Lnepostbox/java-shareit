@@ -54,7 +54,7 @@ class UserServiceImplMockTest {
     }
 
     @Test
-    void FindByIdTestThrowsException() {
+    void findByIdTestThrowsException() {
         Mockito.when(userRepository.findById(Mockito.anyLong()))
                 .thenReturn(Optional.empty());
 

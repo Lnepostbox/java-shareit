@@ -53,7 +53,7 @@ public class BookingControllerMockTest {
         itemDto.setDescription("testDescription");
         itemDto.setAvailable(true);
 
-        bookingDtoResponse = new BookingDtoResponse ();
+        bookingDtoResponse = new BookingDtoResponse();
         bookingDtoResponse.setId(1L);
         bookingDtoResponse.setStart(LocalDateTime.of(2022, 12, 12, 10, 0));
         bookingDtoResponse.setEnd(LocalDateTime.of(2022, 12, 20, 10, 0));

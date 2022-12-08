@@ -163,31 +163,31 @@ public class BookingControllerTest {
         bookingDtoRequest.setItemId(item.getId());
         UserDto user1 = userController.save(userDto1);
         BookingDtoResponse booking = bookingController.save(user1.getId(), bookingDtoRequest);
-        assertEquals(1, bookingController.
-                findAllByState(user1.getId(), "WAITING", 0, 10).size());
-        assertEquals(1, bookingController.
-                findAllByState(user1.getId(), "ALL", 0, 10).size());
-        assertEquals(0, bookingController.
-                findAllByState(user1.getId(), "PAST", 0, 10).size());
-        assertEquals(0, bookingController.
-                findAllByState(user1.getId(), "CURRENT", 0, 10).size());
-        assertEquals(1, bookingController.
-                findAllByState(user1.getId(), "FUTURE", 0, 10).size());
-        assertEquals(0, bookingController.
-                findAllByState(user1.getId(), "REJECTED", 0, 10).size());
+        assertEquals(1, bookingController
+                .findAllByState(user1.getId(), "WAITING", 0, 10).size());
+        assertEquals(1, bookingController
+                .findAllByState(user1.getId(), "ALL", 0, 10).size());
+        assertEquals(0, bookingController
+                .findAllByState(user1.getId(), "PAST", 0, 10).size());
+        assertEquals(0, bookingController
+                .findAllByState(user1.getId(), "CURRENT", 0, 10).size());
+        assertEquals(1, bookingController
+                .findAllByState(user1.getId(), "FUTURE", 0, 10).size());
+        assertEquals(0, bookingController
+                .findAllByState(user1.getId(), "REJECTED", 0, 10).size());
         bookingController.updateState(booking.getId(), user.getId(), true);
-        assertEquals(0, bookingController.
-                findAllByState(user.getId(), "CURRENT", 0, 10).size());
-        assertEquals(1, bookingController.
-                findAllByOwnerIdAndState(user.getId(), "ALL", 0, 10).size());
-        assertEquals(0, bookingController.
-                findAllByOwnerIdAndState(user.getId(), "WAITING", 0, 10).size());
-        assertEquals(1, bookingController.
-                findAllByOwnerIdAndState(user.getId(), "FUTURE", 0, 10).size());
-        assertEquals(0, bookingController.
-                findAllByOwnerIdAndState(user.getId(), "REJECTED", 0, 10).size());
-        assertEquals(0, bookingController.
-                findAllByOwnerIdAndState(user.getId(), "PAST", 0, 10).size());
+        assertEquals(0, bookingController
+                .findAllByState(user.getId(), "CURRENT", 0, 10).size());
+        assertEquals(1, bookingController
+                .findAllByOwnerIdAndState(user.getId(), "ALL", 0, 10).size());
+        assertEquals(0, bookingController
+                .findAllByOwnerIdAndState(user.getId(), "WAITING", 0, 10).size());
+        assertEquals(1, bookingController
+                .findAllByOwnerIdAndState(user.getId(), "FUTURE", 0, 10).size());
+        assertEquals(0, bookingController
+                .findAllByOwnerIdAndState(user.getId(), "REJECTED", 0, 10).size());
+        assertEquals(0, bookingController
+                .findAllByOwnerIdAndState(user.getId(), "PAST", 0, 10).size());
     }
 
     @Test
