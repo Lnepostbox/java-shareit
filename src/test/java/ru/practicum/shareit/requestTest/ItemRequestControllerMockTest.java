@@ -39,7 +39,8 @@ class ItemRequestControllerMockTest {
 
     @Test
     void findAllTest() throws Exception {
-        ItemRequestDto request = new ItemRequestDto(1L,
+        ItemRequestDto request = new ItemRequestDto(
+                1L,
                 "testDescription",
                 LocalDateTime.now(),
                 new ArrayList<>()
@@ -69,7 +70,8 @@ class ItemRequestControllerMockTest {
 
     @Test
     void findAllByUserIdTest() throws Exception {
-        ItemRequestDto request = new ItemRequestDto(1L,
+        ItemRequestDto request = new ItemRequestDto(
+                1L,
                 "testDescription",
                 LocalDateTime.now(),
                 new ArrayList<>()
@@ -125,7 +127,8 @@ class ItemRequestControllerMockTest {
 
     @Test
     void saveTest() throws Exception {
-        ItemRequestDto itemRequestDto = new ItemRequestDto(null,
+        ItemRequestDto itemRequestDto = new ItemRequestDto(
+                null,
                 "testDescription",
                 null,
                 null);

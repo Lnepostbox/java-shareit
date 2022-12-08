@@ -47,6 +47,19 @@ class ItemServiceImplMockTest {
     }
 
     @Test
+    void findAllByTextTestWithEmptyList() {
+        User user = new User(1L, "testName", "test@mail.com");
+        String text = "";
+
+        Mockito.when(userRepository.findById(Mockito.anyLong()))
+                .thenReturn(Optional.of(user));
+
+        List<ItemDtoResponse> results = itemService.findAllByText(text, 0, 10);
+
+        Assertions.assertEquals(0, results.size());
+    }
+
+    @Test
     void saveTest() {
         User user = new User(1L, "testName", "test@mail.com");
         Item item = new Item(1L, "testName", "testDescription", true, user, null);
@@ -70,7 +83,7 @@ class ItemServiceImplMockTest {
     }
 
     @Test
-    void saveTestThrowsExceptionWithWrongUserId() {
+    void saveTestWithWrongUserId() {
         ItemDtoRequest itemDto =
                 new ItemDtoRequest(null, "testName", "testDescription", true, null);
 
@@ -84,7 +97,7 @@ class ItemServiceImplMockTest {
     }
 
     @Test
-    void saveWithRequestTest() {
+    void saveTestWithRequest() {
         User user1 = new User(1L, "testName1", "test1@mail.com");
         User user2 = new User(2L, "testName2", "test2@mail.com");
         ItemRequest itemRequest =
@@ -114,7 +127,7 @@ class ItemServiceImplMockTest {
     }
 
     @Test
-    void saveTestThrowsExceptionWithWrongRequestId() {
+    void saveTestWithWrongRequestId() {
         User user = new User(1L, "testName", "test@mail.com");
         ItemDtoRequest itemDto =
                 new ItemDtoRequest(null, "testName", "testDescription", true, 1L);
@@ -159,18 +172,5 @@ class ItemServiceImplMockTest {
         Assertions.assertEquals(itemDto.getDescription(), foundItem.getDescription());
         Assertions.assertEquals(itemDto.getAvailable(), foundItem.getAvailable());
         Assertions.assertEquals(itemDto.getRequestId(), foundItem.getRequestId());
-    }
-
-    @Test
-    void findAllByTextTestWithEmptyList() {
-        User user = new User(1L, "testName", "test@mail.com");
-        String text = "";
-
-        Mockito.when(userRepository.findById(Mockito.anyLong()))
-                .thenReturn(Optional.of(user));
-
-        List<ItemDtoResponse> results = itemService.findAllByText(text, 0, 10);
-
-        Assertions.assertEquals(0, results.size());
     }
 }

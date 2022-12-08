@@ -57,7 +57,7 @@ class ItemRequestServiceImplMockTest {
     }
 
     @Test
-    void findAllByUserIdTestThrowsExceptionWithWrongUserId() {
+    void findAllByUserIdTestWithWrongUserId() {
         Mockito.when(userRepository.findById(Mockito.anyLong()))
                 .thenReturn(Optional.empty());
 
@@ -86,7 +86,7 @@ class ItemRequestServiceImplMockTest {
     }
 
     @Test
-    void findByIdTestThrowsExceptionWithWrongUserId() {
+    void findByIdTestWithWrongUserId() {
         User user = new User(1L, "testName", "test@mail.com");
         ItemRequest request = new ItemRequest(1L, "testDescription", user, LocalDateTime.now());
 
@@ -101,7 +101,7 @@ class ItemRequestServiceImplMockTest {
     }
 
     @Test
-    void findByIdTestThrowsExceptionWithWrongRequestId() {
+    void findByIdTestWithWrongRequestId() {
         User user = new User(1L, "testName", "test@mail.com");
         ItemRequest request = new ItemRequest(1L, "testDescription", user, LocalDateTime.now());
 
@@ -139,7 +139,7 @@ class ItemRequestServiceImplMockTest {
     }
 
     @Test
-    void saveTestThrowsExceptionWithWrongUserId() {
+    void saveTestWithWrongUserId() {
         ItemRequestDto itemRequestDto = new ItemRequestDto(null, "testDescription", null, null);
 
         Mockito.when(userRepository.findById(Mockito.anyLong()))

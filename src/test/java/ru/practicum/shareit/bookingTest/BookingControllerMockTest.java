@@ -82,9 +82,9 @@ public class BookingControllerMockTest {
     }
 
     @Test
-    void updateStateTest() throws Exception {
+    void updateStatusTest() throws Exception {
         bookingDtoResponse.setStatus(Status.APPROVED);
-        when(bookingService.updateState(anyLong(), anyLong(), anyBoolean()))
+        when(bookingService.updateStatus(anyLong(), anyLong(), anyBoolean()))
                 .thenReturn(bookingDtoResponse);
         mvc.perform(patch("/bookings/1?approved=true")
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -96,8 +96,8 @@ public class BookingControllerMockTest {
     }
 
     @Test
-    void findAllByOwnerIdAndStateTest() throws Exception {
-        when(bookingService.findAllByOwnerIdAndState(anyLong(), anyString(), anyInt(), anyInt()))
+    void findAllByOwnerIdAndStatusTest() throws Exception {
+        when(bookingService.findAllByOwnerIdAndStatus(anyLong(), any(Status.class), anyInt(), anyInt()))
                 .thenReturn(List.of(bookingDtoResponse));
         mvc.perform(get("/bookings/owner")
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -109,8 +109,8 @@ public class BookingControllerMockTest {
     }
 
     @Test
-    void getAllByUserTest() throws Exception {
-        when(bookingService.findAllByState(anyLong(), anyString(), anyInt(), anyInt()))
+    void findAllByUserTest() throws Exception {
+        when(bookingService.findAllByStatus(anyLong(), any(Status.class), anyInt(), anyInt()))
                 .thenReturn(List.of(bookingDtoResponse));
         mvc.perform(get("/bookings")
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -119,6 +119,18 @@ public class BookingControllerMockTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().json(mapper.writeValueAsString(List.of(bookingDtoResponse))));
+    }
+
+    @Test
+    void findAllByUserTestWithWrongStatus() throws Exception {
+        when(bookingService.findAllByOwnerIdAndStatus(anyLong(), any(Status.class), anyInt(), anyInt()))
+                .thenThrow(ValidationException.class);
+        mvc.perform(get("/bookings?state=text")
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-Sharer-User-Id", 1L)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is5xxServerError());
     }
 
     @Test
@@ -132,17 +144,5 @@ public class BookingControllerMockTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().json(mapper.writeValueAsString(bookingDtoResponse)));
-    }
-
-    @Test
-    void getAllByUserWrongStateTest() throws Exception {
-        when(bookingService.findAllByOwnerIdAndState(anyLong(), anyString(), anyInt(), anyInt()))
-                .thenThrow(ValidationException.class);
-        mvc.perform(get("/bookings?state=text")
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", 1L)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is5xxServerError());
     }
 }

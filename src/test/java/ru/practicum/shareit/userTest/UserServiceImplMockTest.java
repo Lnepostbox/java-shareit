@@ -54,7 +54,7 @@ class UserServiceImplMockTest {
     }
 
     @Test
-    void findByIdTestThrowsException() {
+    void findByIdTestWithWrongUserId() {
         Mockito.when(userRepository.findById(Mockito.anyLong()))
                 .thenReturn(Optional.empty());
 
@@ -101,7 +101,7 @@ class UserServiceImplMockTest {
     }
 
     @Test
-    void updateTestThrowsException() {
+    void updateTestWithWrongUserId() {
         UserDto userDto = new UserDto(null, "testNameUpdate", "testUpdate@mail.com");
 
         Mockito.when(userRepository.findById(Mockito.anyLong()))

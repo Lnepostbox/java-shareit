@@ -68,6 +68,31 @@ public class ItemControllerTest {
     }
 
     @Test
+    void findAllByTextTest() {
+        userController.save(userDto);
+        itemController.save(1L, itemDtoRequest);
+        assertEquals(1, itemController.findAllByText("Desc", 0, 10).size());
+    }
+
+    @Test
+    void findAllByTextTestWithEmptyText() {
+        userController.save(userDto);
+        itemController.save(1L, itemDtoRequest);
+        assertEquals(new ArrayList<ItemDtoResponse>(), itemController.findAllByText("", 0, 10));
+    }
+
+    @Test
+    void findAllByTextTestWithWrongFrom() {
+        assertThrows(IllegalArgumentException.class, () -> itemController.findAllByText("t", -1, 10));
+    }
+
+    @Test
+    void findAllWithWrongFromTest() {
+        assertThrows(IllegalArgumentException.class,
+                () -> itemController.findAllByOwnerId(1L, -1, 10));
+    }
+
+    @Test
     void saveTest() {
         UserDto user = userController.save(userDto);
         ItemDtoResponse item = itemController.save(1L, itemDtoRequest);
@@ -75,7 +100,7 @@ public class ItemControllerTest {
     }
 
     @Test
-    void saveWithRequestTest() {
+    void saveTestWithRequest() {
         UserDto user = userController.save(userDto);
         itemRequestController.save(user.getId(), itemRequestDto);
         itemDtoRequest.setRequestId(1L);
@@ -85,63 +110,15 @@ public class ItemControllerTest {
     }
 
     @Test
-    void saveWithWrongUserTest() {
+    void saveTestWithWrongUserId() {
         assertThrows(NotFoundException.class, () -> itemController.save(1L, itemDtoRequest));
     }
 
     @Test
-    void saveWithWrongItemRequestTest() {
+    void saveTestWithWrongItemRequest() {
         itemDtoRequest.setRequestId(10L);
         userController.save(userDto);
         assertThrows(NotFoundException.class, () -> itemController.save(1L, itemDtoRequest));
-    }
-
-    @Test
-    void updateTest() {
-        userController.save(userDto);
-        itemController.save(1L, itemDtoRequest);
-        itemController.update(1L, 1L, itemDtoRequest1);
-        assertEquals(itemDtoRequest1.getDescription(), itemController.findById(1L, 1L).getDescription());
-    }
-
-    @Test
-    void updateWithWrongItemIdTest() {
-        assertThrows(NotFoundException.class, () -> itemController.update(1L, 1L, itemDtoRequest));
-    }
-
-    @Test
-    void updateWithWrongUserIdTest() {
-        userController.save(userDto);
-        itemController.save(1L, itemDtoRequest);
-        assertThrows(NotFoundException.class, () -> itemController.update(10L, 1L, itemDtoRequest1));
-    }
-
-    @Test
-    void deleteTest() {
-        userController.save(userDto);
-        itemController.save(1L, itemDtoRequest);
-        assertEquals(1, itemController.findAllByOwnerId(1L, 0, 10).size());
-        itemController.delete(1L, 1L);
-        assertEquals(0, itemController.findAllByOwnerId(1L, 0, 10).size());
-    }
-
-    @Test
-    void findAllByTextTest() {
-        userController.save(userDto);
-        itemController.save(1L, itemDtoRequest);
-        assertEquals(1, itemController.findAllByText("Desc", 0, 10).size());
-    }
-
-    @Test
-    void findAllByTextWithEmptyTextTest() {
-        userController.save(userDto);
-        itemController.save(1L, itemDtoRequest);
-        assertEquals(new ArrayList<ItemDtoResponse>(), itemController.findAllByText("", 0, 10));
-    }
-
-    @Test
-    void findAllByTextWithWrongFromTest() {
-        assertThrows(IllegalArgumentException.class, () -> itemController.findAllByText("t", -1, 10));
     }
 
     @Test
@@ -155,28 +132,51 @@ public class ItemControllerTest {
                 LocalDateTime.now().plusSeconds(2),
                 item.getId()));
 
-        bookingController.updateState(1L, user.getId(), true);
+        bookingController.updateStatus(1L, user.getId(), true);
         TimeUnit.SECONDS.sleep(2);
         itemController.saveComment(user1.getId(), item.getId(), comment);
         assertEquals(1, itemController.findById(1L, 1L).getComments().size());
     }
 
     @Test
-    void saveCommentWithWrongUserTest() {
+    void saveCommentTestWithWrongUserId() {
         assertThrows(NotFoundException.class, () -> itemController.saveComment(1L, 1L, comment));
     }
 
     @Test
-    void saveCommentWithWrongItemTest() {
-       userController.save(userDto);
+    void saveCommentTestWithWrongItemId() {
+        userController.save(userDto);
         assertThrows(NotFoundException.class, () -> itemController.saveComment(1L, 1L, comment));
         itemController.save(1L, itemDtoRequest);
         assertThrows(BookingException.class, () -> itemController.saveComment(1L, 1L, comment));
     }
 
     @Test
-    void findAllWithWrongFromTest() {
-        assertThrows(IllegalArgumentException.class,
-                () -> itemController.findAllByOwnerId(1L, -1, 10));
+    void updateTest() {
+        userController.save(userDto);
+        itemController.save(1L, itemDtoRequest);
+        itemController.update(1L, 1L, itemDtoRequest1);
+        assertEquals(itemDtoRequest1.getDescription(), itemController.findById(1L, 1L).getDescription());
+    }
+
+    @Test
+    void updateTestWithWrongItemId() {
+        assertThrows(NotFoundException.class, () -> itemController.update(1L, 1L, itemDtoRequest));
+    }
+
+    @Test
+    void updateTestWithWrongUserId() {
+        userController.save(userDto);
+        itemController.save(1L, itemDtoRequest);
+        assertThrows(NotFoundException.class, () -> itemController.update(10L, 1L, itemDtoRequest1));
+    }
+
+    @Test
+    void deleteTest() {
+        userController.save(userDto);
+        itemController.save(1L, itemDtoRequest);
+        assertEquals(1, itemController.findAllByOwnerId(1L, 0, 10).size());
+        itemController.delete(1L, 1L);
+        assertEquals(0, itemController.findAllByOwnerId(1L, 0, 10).size());
     }
 }

@@ -34,15 +34,15 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<BookingDtoResponse> findAllByState(Long userId, String stateText, int from, int size) {
+    public List<BookingDtoResponse> findAllByStatus(Long userId, Status status, int from, int size) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(String.format("User ID %s doesn't exist.", userId)));
 
-        Pageable pageable = PageRequest.of(from / size, size);
+        Pageable pageable = createPageRequest(from, size);
 
-        switch (Status.valueOf(stateText)) {
+        switch (status) {
             case CURRENT:
-                log.info("BookingService: findAllByState implementation. User ID {}, stateText {}", userId, stateText);
+                log.info("BookingService: findAllByState implementation. User ID {}, status CURRENT.", userId);
                 return bookingRepository
                         .findByBookerIdAndCurrentOrderByStartDesc(
                                 userId,
@@ -52,7 +52,7 @@ public class BookingServiceImpl implements BookingService {
                         .map(BookingMapper::toBookingDtoResponse)
                         .collect(Collectors.toList());
             case PAST:
-                log.info("BookingService: findAllByState implementation. User ID {}, stateText {}", userId, stateText);
+                log.info("BookingService: findAllByState implementation. User ID {}, status PAST.", userId);
                 return bookingRepository
                         .findByBookerIdAndEndIsBeforeOrderByStartDesc(
                                 userId,
@@ -62,7 +62,7 @@ public class BookingServiceImpl implements BookingService {
                         .map(BookingMapper::toBookingDtoResponse)
                         .collect(Collectors.toList());
             case FUTURE:
-                log.info("BookingService: findAllByState implementation. User ID {}, stateText {}", userId, stateText);
+                log.info("BookingService: findAllByState implementation. User ID {}, status FUTURE.", userId);
                 return bookingRepository
                         .findByBookerIdAndStartIsAfterOrderByStartDesc(
                                 userId,
@@ -72,7 +72,7 @@ public class BookingServiceImpl implements BookingService {
                         .map(BookingMapper::toBookingDtoResponse)
                         .collect(Collectors.toList());
             case WAITING:
-                log.info("BookingService: findAllByState implementation. User ID {}, stateText {}", userId, stateText);
+                log.info("BookingService: findAllByState implementation. User ID {}, status WAITING.", userId);
                 return bookingRepository
                         .findByBookerIdAndStatusOrderByStartDesc(
                                 userId,
@@ -82,7 +82,7 @@ public class BookingServiceImpl implements BookingService {
                         .map(BookingMapper::toBookingDtoResponse)
                         .collect(Collectors.toList());
             case REJECTED:
-                log.info("BookingService: findAllByState implementation. User ID {}, stateText {}", userId, stateText);
+                log.info("BookingService: findAllByState implementation. User ID {}, status REJECTED.", userId);
                 return bookingRepository
                         .findByBookerIdAndStatusOrderByStartDesc(
                                 userId,
@@ -105,11 +105,11 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<BookingDtoResponse> findAllByOwnerIdAndState(Long userId, String stateText, int from, int size) {
+    public List<BookingDtoResponse> findAllByOwnerIdAndStatus(Long userId, Status status, int from, int size) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(String.format("User ID %s doesn't exist.", userId)));
 
-        Pageable pageable = PageRequest.of(from / size, size);
+        Pageable pageable = createPageRequest(from, size);
 
         List<BookingDtoResponse> bookings = bookingRepository.findByItemOwnerIdOrderByStartDesc(
                         userId,
@@ -122,10 +122,10 @@ public class BookingServiceImpl implements BookingService {
             throw new NotFoundException(String.format("User ID %s doesn't have items.", userId));
         }
 
-        switch (Status.valueOf(stateText)) {
+        switch (status) {
             case CURRENT:
-                log.info("BookingService: findAllByOwnerIdAndState implementation. User ID {}, stateText {}.",
-                        userId, stateText);
+                log.info("BookingService: findAllByOwnerIdAndStatus implementation. User ID {}, status CURRENT.",
+                        userId);
                 return bookingRepository
                         .findByItemOwnerIdAndCurrentOrderByStartDesc(
                                 userId,
@@ -135,8 +135,8 @@ public class BookingServiceImpl implements BookingService {
                         .map(BookingMapper::toBookingDtoResponse)
                         .collect(Collectors.toList());
             case PAST:
-                log.info("BookingService: findAllByOwnerIdAndState implementation. User ID {}, stateText {}.",
-                        userId, stateText);
+                log.info("BookingService: findAllByOwnerIdAndStatus implementation. User ID {}, status PAST.",
+                        userId);
                 return bookingRepository
                         .findByItemOwnerIdAndEndIsBeforeOrderByStartDesc(
                                 userId,
@@ -146,8 +146,8 @@ public class BookingServiceImpl implements BookingService {
                         .map(BookingMapper::toBookingDtoResponse)
                         .collect(Collectors.toList());
             case FUTURE:
-                log.info("BookingService: findAllByOwnerIdAndState implementation. User ID {}, stateText {}.",
-                        userId, stateText);
+                log.info("BookingService: findAllByOwnerIdAndStatus implementation. User ID {}, status FUTURE.",
+                        userId);
                 return bookingRepository
                         .findByItemOwnerIdAndStartIsAfterOrderByStartDesc(
                                 userId,
@@ -157,8 +157,8 @@ public class BookingServiceImpl implements BookingService {
                         .map(BookingMapper::toBookingDtoResponse)
                         .collect(Collectors.toList());
             case WAITING:
-                log.info("BookingService: findAllByOwnerIdAndState implementation. User ID {}, stateText {}.",
-                        userId, stateText);
+                log.info("BookingService: findAllByOwnerIdAndStatus implementation. User ID {}, status WAITING.",
+                        userId);
                 return bookingRepository
                         .findByItemOwnerIdAndStatusOrderByStartDesc(
                                 userId,
@@ -168,8 +168,8 @@ public class BookingServiceImpl implements BookingService {
                         .map(BookingMapper::toBookingDtoResponse)
                         .collect(Collectors.toList());
             case REJECTED:
-                log.info("BookingService: findAllByOwnerIdAndState implementation. User ID {}, stateText {}.",
-                        userId, stateText);
+                log.info("BookingService: findAllByOwnerIdAndStatus implementation. User ID {}, status REJECTED.",
+                        userId);
                 return bookingRepository
                         .findByItemOwnerIdAndStatusOrderByStartDesc(
                                 userId,
@@ -179,7 +179,7 @@ public class BookingServiceImpl implements BookingService {
                         .map(BookingMapper::toBookingDtoResponse)
                         .collect(Collectors.toList());
             default:
-                log.info("BookingService: findAllByOwnerIdAndState implementation. User ID {}, stateText by default.",
+                log.info("BookingService: findAllByOwnerIdAndStatus implementation. User ID {}, status text by default.",
                         userId);
                 return bookings;
         }
@@ -221,7 +221,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional
-    public BookingDtoResponse updateState(Long userId, Long bookingId, Boolean approved) {
+    public BookingDtoResponse updateStatus(Long userId, Long bookingId, Boolean approved) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException(String.format("Booking ID %s doesn't exist.", bookingId)));
 
@@ -247,5 +247,9 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new NotFoundException(String.format("Booking ID %s doesn't exist.", bookingId)));
         log.info("BookingService: delete implementation. Booking ID {}.", bookingId);
         bookingRepository.deleteById(bookingId);
+    }
+
+    private PageRequest createPageRequest(int from, int size) {
+        return PageRequest.of(from / size, size);
     }
 }

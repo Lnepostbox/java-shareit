@@ -17,6 +17,8 @@ import ru.practicum.shareit.item.dto.ItemDtoRequest;
 import ru.practicum.shareit.item.dto.ItemDtoResponse;
 import ru.practicum.shareit.user.controller.UserController;
 import ru.practicum.shareit.user.dto.UserDto;
+
+import javax.validation.ConstraintViolationException;
 import java.time.LocalDateTime;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -116,44 +118,44 @@ public class BookingControllerTest {
     }
 
     @Test
-    void updateStateTest() {
+    void updateStatusTest() {
         UserDto user = userController.save(userDto);
         ItemDtoResponse item = itemController.save(user.getId(), itemDtoRequest);
         bookingDtoRequest.setItemId(item.getId());
         UserDto user1 = userController.save(userDto1);
         BookingDtoResponse booking = bookingController.save(user1.getId(), bookingDtoRequest);
         assertEquals(Status.WAITING, bookingController.findById(user1.getId(), booking.getId()).getStatus());
-        bookingController.updateState(user.getId(), booking.getId(), true);
+        bookingController.updateStatus(user.getId(), booking.getId(), true);
         assertEquals(Status.APPROVED, bookingController.findById(user1.getId(), booking.getId()).getStatus());
     }
 
     @Test
-    void updateStateTestWithWrongBooking() {
+    void updateStatusTestWithWrongBooking() {
         assertThrows(NotFoundException.class,
-                () -> bookingController.updateState(1L, 1L, true));
+                () -> bookingController.updateStatus(1L, 1L, true));
     }
 
     @Test
-    void updateStateTestWithWrongUser() {
+    void updateStatusTestWithWrongUser() {
         UserDto user = userController.save(userDto);
         ItemDtoResponse item = itemController.save(user.getId(), itemDtoRequest);
         bookingDtoRequest.setItemId(item.getId());
         UserDto user1 = userController.save(userDto1);
         bookingController.save(user1.getId(), bookingDtoRequest);
         assertThrows(NotFoundException.class,
-                () -> bookingController.updateState(1L, 2L, true));
+                () -> bookingController.updateStatus(1L, 2L, true));
     }
 
     @Test
-    void updateStateToBookingWithWrongStatus() {
+    void updateStatusTestWithWrongStatus() {
         UserDto user = userController.save(userDto);
         ItemDtoResponse item = itemController.save(user.getId(), itemDtoRequest);
         bookingDtoRequest.setItemId(item.getId());
         UserDto user1 = userController.save(userDto1);
         bookingController.save(user1.getId(), bookingDtoRequest);
-        bookingController.updateState(1L, 1L, true);
+        bookingController.updateStatus(1L, 1L, true);
         assertThrows(BookingException.class,
-                () -> bookingController.updateState(1L, 1L, true));
+                () -> bookingController.updateStatus(1L, 1L, true));
     }
 
     @Test
@@ -164,38 +166,46 @@ public class BookingControllerTest {
         UserDto user1 = userController.save(userDto1);
         BookingDtoResponse booking = bookingController.save(user1.getId(), bookingDtoRequest);
         assertEquals(1, bookingController
-                .findAllByState(user1.getId(), "WAITING", 0, 10).size());
+                .findAllByStatus(user1.getId(), "WAITING", 0, 10).size());
         assertEquals(1, bookingController
-                .findAllByState(user1.getId(), "ALL", 0, 10).size());
+                .findAllByStatus(user1.getId(), "ALL", 0, 10).size());
         assertEquals(0, bookingController
-                .findAllByState(user1.getId(), "PAST", 0, 10).size());
+                .findAllByStatus(user1.getId(), "PAST", 0, 10).size());
         assertEquals(0, bookingController
-                .findAllByState(user1.getId(), "CURRENT", 0, 10).size());
+                .findAllByStatus(user1.getId(), "CURRENT", 0, 10).size());
         assertEquals(1, bookingController
-                .findAllByState(user1.getId(), "FUTURE", 0, 10).size());
+                .findAllByStatus(user1.getId(), "FUTURE", 0, 10).size());
         assertEquals(0, bookingController
-                .findAllByState(user1.getId(), "REJECTED", 0, 10).size());
-        bookingController.updateState(booking.getId(), user.getId(), true);
+                .findAllByStatus(user1.getId(), "REJECTED", 0, 10).size());
+        bookingController.updateStatus(booking.getId(), user.getId(), true);
         assertEquals(0, bookingController
-                .findAllByState(user.getId(), "CURRENT", 0, 10).size());
+                .findAllByStatus(user.getId(), "CURRENT", 0, 10).size());
         assertEquals(1, bookingController
-                .findAllByOwnerIdAndState(user.getId(), "ALL", 0, 10).size());
+                .findAllByOwnerIdAndStatus(user.getId(), "ALL", 0, 10).size());
         assertEquals(0, bookingController
-                .findAllByOwnerIdAndState(user.getId(), "WAITING", 0, 10).size());
+                .findAllByOwnerIdAndStatus(user.getId(), "WAITING", 0, 10).size());
         assertEquals(1, bookingController
-                .findAllByOwnerIdAndState(user.getId(), "FUTURE", 0, 10).size());
+                .findAllByOwnerIdAndStatus(user.getId(), "FUTURE", 0, 10).size());
         assertEquals(0, bookingController
-                .findAllByOwnerIdAndState(user.getId(), "REJECTED", 0, 10).size());
+                .findAllByOwnerIdAndStatus(user.getId(), "REJECTED", 0, 10).size());
         assertEquals(0, bookingController
-                .findAllByOwnerIdAndState(user.getId(), "PAST", 0, 10).size());
+                .findAllByOwnerIdAndStatus(user.getId(), "PAST", 0, 10).size());
     }
 
     @Test
-    void findAllByWrongUserTest() {
+    void findAllTestsWithWrongUserId() {
         assertThrows(NotFoundException.class, () -> bookingController
-                .findAllByState(1L, "ALL", 0, 10));
+                .findAllByStatus(1L, "ALL", 0, 10));
         assertThrows(NotFoundException.class, () -> bookingController
-                .findAllByOwnerIdAndState(1L, "ALL", 0, 10));
+                .findAllByOwnerIdAndStatus(1L, "ALL", 0, 10));
+    }
+
+    @Test
+    void findAllTestsWithWrongForm() {
+        assertThrows(ConstraintViolationException.class, () -> bookingController
+                .findAllByStatus(1L, "ALL", -1, 10));
+        assertThrows(ConstraintViolationException.class, () -> bookingController
+                .findAllByOwnerIdAndStatus(1L, "ALL", -1, 10));
     }
 
     @Test

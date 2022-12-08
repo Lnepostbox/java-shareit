@@ -48,13 +48,13 @@ public class ItemRequestControllerTest {
     }
 
     @Test
-    void findAllTestThrowsExceptionWithWrongUserId() {
+    void findAllTestWithWrongUserId() {
         assertThrows(NotFoundException.class, () -> itemRequestController
                 .findAll(1L, 0, 10));
     }
 
     @Test
-    void findAllTestThrowsExceptionWithWrongFrom() {
+    void findAllTestWithWrongFrom() {
         assertThrows(ConstraintViolationException.class, () -> itemRequestController
                 .findAll(1L, -1, 10));
     }
@@ -67,7 +67,7 @@ public class ItemRequestControllerTest {
     }
 
     @Test
-    void findAllByUserIdTestThrowsExceptionWithWrongUserId() {
+    void findAllByUserIdTestWithWrongUserId() {
         assertThrows(NotFoundException.class, () -> itemRequestController.findAllByUserId(1L));
     }
 
@@ -79,7 +79,7 @@ public class ItemRequestControllerTest {
     }
 
     @Test
-    void saveTestThrowsExceptionWithWrongUserId() {
+    void saveTestWithWrongUserId() {
         assertThrows(NotFoundException.class, () -> itemRequestController.save(1L, itemRequestDto));
     }
 

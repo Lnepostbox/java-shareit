@@ -21,7 +21,13 @@ public class UserControllerTest {
 
     @BeforeEach
     void init() {
-        user = new UserDto(null, "testName", "user@email.com");
+        user = new UserDto(null, "testName", "test@mail.com");
+    }
+
+    @Test
+    void findByIdTestWithWrongUserId() {
+        assertThrows(NotFoundException.class,
+                () -> userController.findById(1L));
     }
 
     @Test
@@ -33,13 +39,13 @@ public class UserControllerTest {
     @Test
     void updateTest() {
         userController.save(user);
-        UserDto userDto = new UserDto(null, "testNameUpdate", "update@email.com");
+        UserDto userDto = new UserDto(null, "testNameUpdate", "testUpdate@mail.com");
         userController.update(1L, userDto);
         assertEquals(userDto.getEmail(), userController.findById(1L).getEmail());
     }
 
     @Test
-    void updateTestThrowsException() {
+    void updateTestWithWrongUserId() {
         assertThrows(NotFoundException.class,
                 () -> userController.update(1L, user));
     }
@@ -52,9 +58,4 @@ public class UserControllerTest {
         assertEquals(0, userController.findAll().size());
     }
 
-    @Test
-    void findByIdTestThrowsException() {
-        assertThrows(NotFoundException.class,
-                () -> userController.findById(1L));
-    }
 }

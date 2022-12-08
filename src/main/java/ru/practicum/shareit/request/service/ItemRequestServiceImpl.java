@@ -39,7 +39,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(String.format("User ID %s doesn't exist.", userId)));
 
-        PageRequest pageRequest = PageRequest.of(from / size, size);
+        PageRequest pageRequest = createPageRequest(from, size);
 
         List<ItemRequest> itemRequests = itemRequestRepository
                 .findAllByRequestorIdNotLike(userId, pageRequest);
@@ -52,6 +52,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     public List<ItemRequestDto> findAllByUserId(Long userId) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(String.format("User ID %s doesn't exist.", userId)));
+
         List<ItemRequest> itemRequests = itemRequestRepository
                 .findAllByRequestorIdOrderByCreatedAsc(userId);
         log.info("ItemRequestService: findAllByUserId implementation. User ID {}.", userId);
@@ -108,5 +109,9 @@ public class ItemRequestServiceImpl implements ItemRequestService {
             return itemRequestDto;
                 })
                 .collect(toList());
+    }
+
+    private PageRequest createPageRequest(int from, int size) {
+        return PageRequest.of(from / size, size);
     }
 }

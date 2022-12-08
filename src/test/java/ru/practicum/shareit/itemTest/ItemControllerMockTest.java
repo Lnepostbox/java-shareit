@@ -71,6 +71,19 @@ public class ItemControllerMockTest {
     }
 
     @Test
+    void findAllByTextTest() throws Exception {
+        when(itemService.findAllByText(anyString(), anyInt(), anyInt()))
+                .thenReturn(List.of(itemDtoResponse));
+        mvc.perform(get("/items/search?text='name'")
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-Sharer-User-Id", 1L)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().json(mapper.writeValueAsString(List.of(itemDtoResponse))));
+    }
+
+    @Test
     void findByIdTest() throws Exception {
         when(itemService.findById(anyLong(), anyLong()))
                 .thenReturn(itemDtoResponse);
@@ -98,33 +111,6 @@ public class ItemControllerMockTest {
     }
 
     @Test
-    void updateTest() throws Exception {
-        when(itemService.update(anyLong(), anyLong(), any(ItemDtoRequest.class)))
-                .thenReturn(itemDtoResponse);
-        mvc.perform(patch("/items/1")
-                        .content(mapper.writeValueAsString(itemDtoResponse))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", 1L)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().json(mapper.writeValueAsString(itemDtoResponse)));
-    }
-
-    @Test
-    void findAllByTextTest() throws Exception {
-        when(itemService.findAllByText(anyString(), anyInt(), anyInt()))
-                .thenReturn(List.of(itemDtoResponse));
-        mvc.perform(get("/items/search?text='name'")
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", 1L)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().json(mapper.writeValueAsString(List.of(itemDtoResponse))));
-    }
-
-    @Test
     void saveCommentTest() throws Exception {
         when(commentService.save(anyLong(), anyLong(), any()))
                 .thenReturn(commentDto);
@@ -136,5 +122,19 @@ public class ItemControllerMockTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().json(mapper.writeValueAsString(commentDto)));
+    }
+
+    @Test
+    void updateTest() throws Exception {
+        when(itemService.update(anyLong(), anyLong(), any(ItemDtoRequest.class)))
+                .thenReturn(itemDtoResponse);
+        mvc.perform(patch("/items/1")
+                        .content(mapper.writeValueAsString(itemDtoResponse))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-Sharer-User-Id", 1L)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().json(mapper.writeValueAsString(itemDtoResponse)));
     }
 }

@@ -12,7 +12,8 @@ import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.validator.Create;
 import ru.practicum.shareit.validator.Update;
 import javax.validation.Valid;
-import javax.validation.constraints.Min;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
@@ -27,10 +28,10 @@ public class ItemController {
     @GetMapping
     public List<ItemDtoResponse> findAllByOwnerId(
             @RequestHeader("X-Sharer-User-Id") Long ownerId,
-            @RequestParam(defaultValue = "0")
-            @Min(value = 0, message = "Parameter from must not be negative") int from,
-            @RequestParam(defaultValue = "10")
-            @Min(value = 1, message = "Parameter size must be positive") int size) {
+            @RequestParam(value = "from", defaultValue = "0")
+            @PositiveOrZero int from,
+            @RequestParam(value = "size", defaultValue = "10")
+            @Positive int size) {
         log.info("ItemController: findAllByOwnerId implementation. User ID {}.", ownerId);
         return itemService.findAllByOwnerId(ownerId, from, size);
     }
@@ -38,10 +39,10 @@ public class ItemController {
     @GetMapping(value = "/search")
     public List<ItemDtoResponse> findAllByText(
             @RequestParam(name = "text") String text,
-            @RequestParam(defaultValue = "0")
-            @Min(value = 0, message = "Parameter from must not be negative") int from,
-            @RequestParam(defaultValue = "10")
-            @Min(value = 1, message = "Parameter size must be positive") int size) {
+            @RequestParam(value = "from", defaultValue = "0")
+            @PositiveOrZero int from,
+            @RequestParam(value = "size", defaultValue = "10")
+            @Positive int size) {
         if (text.isBlank()) {
             return List.of();
         }
