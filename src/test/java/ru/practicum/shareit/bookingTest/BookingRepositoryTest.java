@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.annotation.Rollback;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.Status;
@@ -63,7 +64,7 @@ class BookingRepositoryTest {
     }
 
     @Test
-    void shouldReturnCurrentBookingsByBookerId() {
+    void findByBookerIdAndCurrentOrderByStartDescTest() {
         booking1.setStart(booking1.getStart().minusHours(1));
         booking1.setEnd(booking1.getEnd().plusHours(1));
         bookingRepository.save(booking1);
@@ -76,7 +77,7 @@ class BookingRepositoryTest {
     }
 
     @Test
-    void shouldReturnEmptyBookingsByWrongBookerId() {
+    void findByBookerIdAndCurrentOrderByStartDescTestEmpty() {
         booking1.setStart(booking1.getStart().minusHours(1));
         booking1.setEnd(booking1.getEnd().plusHours(1));
         bookingRepository.save(booking1);
@@ -89,7 +90,7 @@ class BookingRepositoryTest {
     }
 
     @Test
-    void shouldReturnCurrentBookingsByItemOwnerId() {
+    void findByItemOwnerIdAndCurrentOrderByStartDescTest() {
         booking1.setStart(booking1.getStart().minusHours(1));
         booking1.setEnd(booking1.getEnd().plusHours(1));
         bookingRepository.save(booking1);
@@ -102,7 +103,7 @@ class BookingRepositoryTest {
     }
 
     @Test
-    void shouldReturnEmptyBookingsByWrongItemOwnerId() {
+    void findByItemOwnerIdAndCurrentOrderByStartDescTestEmpty() {
         booking1.setStart(booking1.getStart().minusHours(1));
         booking1.setEnd(booking1.getEnd().plusHours(1));
         bookingRepository.save(booking1);
@@ -115,7 +116,7 @@ class BookingRepositoryTest {
     }
 
     @Test
-    void shouldReturnLastBooking() {
+    void findLastBookingTest() {
         booking2.setEnd(booking2.getEnd().plusHours(1));
         bookingRepository.save(booking2);
 
@@ -126,7 +127,7 @@ class BookingRepositoryTest {
     }
 
     @Test
-    void shouldReturnNextBooking() {
+    void findNextBookingTest() {
         booking2.setStart(booking2.getStart().plusHours(1));
         booking2.setEnd(booking2.getEnd().plusHours(2));
         bookingRepository.save(booking2);
@@ -135,6 +136,123 @@ class BookingRepositoryTest {
 
         Assertions.assertNotNull(nextBooking);
         Assertions.assertEquals(nextBooking.getBooker().getName(), user3.getName());
+    }
+
+    @Test
+    void findByBookerIdAndEndIsBeforeOrderByStartDescTest() {
+        booking1.setStart(booking1.getStart().minusHours(2));
+        booking1.setEnd(booking1.getEnd().minusHours(1));
+        bookingRepository.save(booking1);
+
+        List<Booking> results = bookingRepository
+                .findByBookerIdAndEndIsBeforeOrderByStartDesc(user1.getId(), LocalDateTime.now(), Pageable.unpaged());
+
+        Assertions.assertNotNull(results);
+        Assertions.assertEquals(1, results.size());
+    }
+
+    @Test
+    void findByBookerIdAndStartIsAfterOrderByStartDescTest() {
+        booking1.setStart(booking1.getStart().plusHours(2));
+        booking1.setEnd(booking1.getEnd().plusHours(3));
+        bookingRepository.save(booking1);
+
+        List<Booking> results = bookingRepository
+                .findByBookerIdAndStartIsAfterOrderByStartDesc(user1.getId(), LocalDateTime.now(), Pageable.unpaged());
+
+        Assertions.assertNotNull(results);
+        Assertions.assertEquals(1, results.size());
+    }
+
+    @Test
+    void findByBookerIdAndStatusOrderByStartDescTest() {
+        booking1.setStatus(Status.REJECTED);
+        bookingRepository.save(booking1);
+
+        List<Booking> results = bookingRepository
+                .findByBookerIdAndStatusOrderByStartDesc(user1.getId(), Status.REJECTED, Pageable.unpaged());
+
+        Assertions.assertNotNull(results);
+        Assertions.assertEquals(1, results.size());
+    }
+
+    @Test
+    void findByBookerIdOrderByStartDescTest() {
+        List<Booking> results = bookingRepository
+                .findByBookerIdOrderByStartDesc(user1.getId(), Pageable.unpaged());
+
+        Assertions.assertNotNull(results);
+        Assertions.assertEquals(1, results.size());
+    }
+
+    @Test
+    void findByItemOwnerIdOrderByStartDescTest() {
+        List<Booking> results = bookingRepository
+                .findByItemOwnerIdOrderByStartDesc(user2.getId(), Pageable.unpaged());
+
+        Assertions.assertNotNull(results);
+        Assertions.assertEquals(2, results.size());
+    }
+
+    @Test
+    void findByItemOwnerIdAndEndIsBeforeOrderByStartDescTest() {
+        booking1.setStart(booking1.getStart().minusHours(2));
+        booking1.setEnd(booking1.getEnd().minusHours(1));
+        bookingRepository.save(booking1);
+
+        List<Booking> results = bookingRepository
+                .findByItemOwnerIdAndEndIsBeforeOrderByStartDesc(
+                        user2.getId(), LocalDateTime.now(), Pageable.unpaged());
+
+        Assertions.assertNotNull(results);
+    }
+
+    @Test
+    void findByItemOwnerIdAndStartIsAfterOrderByStartDescTest() {
+        booking1.setStart(booking1.getStart().plusHours(2));
+        booking1.setEnd(booking1.getEnd().plusHours(3));
+        bookingRepository.save(booking1);
+
+        List<Booking> results = bookingRepository
+                .findByItemOwnerIdAndStartIsAfterOrderByStartDesc(
+                        user2.getId(), LocalDateTime.now(), Pageable.unpaged());
+
+        Assertions.assertNotNull(results);
+        Assertions.assertEquals(1, results.size());
+    }
+
+    @Test
+    void findByItemOwnerIdAndStatusOrderByStartDescTest() {
+        booking1.setStatus(Status.REJECTED);
+        bookingRepository.save(booking1);
+
+        List<Booking> results = bookingRepository
+                .findByItemOwnerIdAndStatusOrderByStartDesc(user2.getId(), Status.REJECTED, Pageable.unpaged());
+
+        Assertions.assertNotNull(results);
+        Assertions.assertEquals(1, results.size());
+    }
+
+    @Test
+    void findByBookerIdAndItemIdAndEndIsBeforeTest() {
+        booking1.setStart(booking1.getStart().minusHours(2));
+        booking1.setEnd(booking1.getEnd().minusHours(1));
+        bookingRepository.save(booking1);
+
+        List<Booking> results = bookingRepository
+                .findByBookerIdAndItemIdAndEndIsBefore(user1.getId(), item1.getId(), LocalDateTime.now());
+
+        Assertions.assertNotNull(results);
+        Assertions.assertEquals(1, results.size());
+    }
+
+    @Test
+    void findAllByItemInAndStatusTest() {
+        List<Booking> results = bookingRepository
+                .findAllByItemInAndStatus(List.of(item1), Status.APPROVED, Sort.unsorted());
+
+        Assertions.assertNotNull(results);
+        Assertions.assertEquals(2, results.size());
     }
 
     @AfterEach

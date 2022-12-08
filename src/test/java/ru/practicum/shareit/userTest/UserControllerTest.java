@@ -40,7 +40,8 @@ public class UserControllerTest {
 
     @Test
     void updateTestThrowsException() {
-        assertThrows(NotFoundException.class, () -> userController.update(1L, user));
+        assertThrows(NotFoundException.class,
+                () -> userController.update(1L, user));
     }
 
     @Test
@@ -53,6 +54,7 @@ public class UserControllerTest {
 
     @Test
     void findByIdTestThrowsException() {
-        assertThrows(NotFoundException.class, () -> userController.findById(1L));
+        assertThrows(NotFoundException.class,
+                () -> userController.findById(1L));
     }
 }

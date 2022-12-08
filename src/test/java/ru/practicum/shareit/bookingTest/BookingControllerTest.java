@@ -213,4 +213,16 @@ public class BookingControllerTest {
         bookingController.save(user1.getId(), bookingDtoRequest);
         assertThrows(NotFoundException.class, () -> bookingController.findById(1L, 10L));
     }
+
+    @Test
+    void deleteTest() {
+        UserDto user = userController.save(userDto);
+        ItemDtoResponse item = itemController.save(user.getId(), itemDtoRequest);
+        bookingDtoRequest.setItemId(item.getId());
+        UserDto user1 = userController.save(userDto1);
+        BookingDtoResponse booking = bookingController.save(user1.getId(), bookingDtoRequest);
+        assertEquals(1L, bookingController.findById(user.getId(), booking.getId()).getId());
+        bookingController.delete(booking.getId());
+        assertThrows(NotFoundException.class, () -> bookingController.findById(user.getId(), booking.getId()));
+    }
 }
