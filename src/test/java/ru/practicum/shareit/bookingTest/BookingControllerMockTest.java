@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -26,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = BookingController.class)
+@AutoConfigureMockMvc
 public class BookingControllerMockTest {
     @Autowired
     private ObjectMapper mapper;
@@ -79,6 +81,17 @@ public class BookingControllerMockTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().json(mapper.writeValueAsString(bookingDtoResponse)));
+    }
+
+    @Test
+    void saveTestBookingStartAfterEnd() throws Exception {
+        bookingDtoRequest.setStart(LocalDateTime.now().plusDays(5));
+        bookingDtoRequest.setEnd(LocalDateTime.now().plusDays(2));
+        mvc.perform(post("/bookings")
+                        .content(mapper.writeValueAsString(bookingDtoRequest))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is5xxServerError());
     }
 
     @Test

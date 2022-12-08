@@ -106,17 +106,6 @@ public class BookingControllerTest {
     }
 
     @Test
-    void saveTestWithWrongEndDate() {
-        UserDto user = userController.save(userDto);
-        ItemDtoResponse item = itemController.save(user.getId(), itemDtoRequest);
-        bookingDtoRequest.setItemId(item.getId());
-        UserDto user1 = userController.save(userDto1);
-        bookingDtoRequest.setEnd(LocalDateTime.of(2022, 9, 24, 12, 30));
-        assertThrows(BookingException.class,
-                () -> bookingController.save(user1.getId(), bookingDtoRequest));
-    }
-
-    @Test
     void updateStatusTest() {
         UserDto user = userController.save(userDto);
         ItemDtoResponse item = itemController.save(user.getId(), itemDtoRequest);

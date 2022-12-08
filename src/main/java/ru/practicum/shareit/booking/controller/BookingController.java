@@ -62,9 +62,6 @@ public class BookingController {
     public BookingDtoResponse save(
             @RequestHeader("X-Sharer-User-Id") Long userId,
             @Validated(Create.class) @RequestBody BookingDtoRequest bookingDtoRequest) {
-        if (!bookingDtoRequest.getEnd().isAfter(bookingDtoRequest.getStart())) {
-            throw new BookingException("Incorrect booking time insertion.");
-        }
         log.info("BookingController: save implementation. User ID {}.", userId);
         return bookingService.save(userId, bookingDtoRequest);
     }
