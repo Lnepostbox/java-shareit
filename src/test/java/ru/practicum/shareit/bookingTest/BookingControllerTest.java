@@ -17,7 +17,6 @@ import ru.practicum.shareit.item.dto.ItemDtoRequest;
 import ru.practicum.shareit.item.dto.ItemDtoResponse;
 import ru.practicum.shareit.user.controller.UserController;
 import ru.practicum.shareit.user.dto.UserDto;
-
 import javax.validation.ConstraintViolationException;
 import java.time.LocalDateTime;
 import static org.junit.jupiter.api.Assertions.assertEquals;
