@@ -2,7 +2,8 @@ package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingDtoRequest;
@@ -33,67 +34,69 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<BookingDtoResponse> findAllByState(Long userId, String stateText) {
+    public List<BookingDtoResponse> findAllByStatus(Long userId, Status status, int from, int size) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(String.format("User ID %s doesn't exist.", userId)));
 
-        switch (Status.valueOf(stateText)) {
+        Pageable pageable = createPageRequest(from, size);
+
+        switch (status) {
             case CURRENT:
-                log.info("BookingService: findAllByState implementation. User ID {}, stateText {}", userId, stateText);
+                log.info("BookingService: findAllByState implementation. User ID {}, status CURRENT.", userId);
                 return bookingRepository
-                        .findByBookerIdAndCurrent(
+                        .findByBookerIdAndCurrentOrderByStartDesc(
                                 userId,
                                 LocalDateTime.now(),
-                                Sort.by(Sort.Direction.DESC, "start"))
+                                pageable)
                         .stream()
                         .map(BookingMapper::toBookingDtoResponse)
                         .collect(Collectors.toList());
             case PAST:
-                log.info("BookingService: findAllByState implementation. User ID {}, stateText {}", userId, stateText);
+                log.info("BookingService: findAllByState implementation. User ID {}, status PAST.", userId);
                 return bookingRepository
-                        .findByBookerIdAndEndIsBefore(
+                        .findByBookerIdAndEndIsBeforeOrderByStartDesc(
                                 userId,
                                 LocalDateTime.now(),
-                                Sort.by(Sort.Direction.DESC, "start"))
+                                pageable)
                         .stream()
                         .map(BookingMapper::toBookingDtoResponse)
                         .collect(Collectors.toList());
             case FUTURE:
-                log.info("BookingService: findAllByState implementation. User ID {}, stateText {}", userId, stateText);
+                log.info("BookingService: findAllByState implementation. User ID {}, status FUTURE.", userId);
                 return bookingRepository
-                        .findByBookerIdAndStartIsAfter(
+                        .findByBookerIdAndStartIsAfterOrderByStartDesc(
                                 userId,
                                 LocalDateTime.now(),
-                                Sort.by(Sort.Direction.DESC, "start"))
+                                pageable)
                         .stream()
                         .map(BookingMapper::toBookingDtoResponse)
                         .collect(Collectors.toList());
             case WAITING:
-                log.info("BookingService: findAllByState implementation. User ID {}, stateText {}", userId, stateText);
+                log.info("BookingService: findAllByState implementation. User ID {}, status WAITING.", userId);
                 return bookingRepository
-                        .findByBookerIdAndStatus(
+                        .findByBookerIdAndStatusOrderByStartDesc(
                                 userId,
                                 Status.WAITING,
-                                Sort.by(Sort.Direction.DESC, "start"))
+                                pageable)
                         .stream()
                         .map(BookingMapper::toBookingDtoResponse)
                         .collect(Collectors.toList());
             case REJECTED:
-                log.info("BookingService: findAllByState implementation. User ID {}, stateText {}", userId, stateText);
+                log.info("BookingService: findAllByState implementation. User ID {}, status REJECTED.", userId);
                 return bookingRepository
-                        .findByBookerIdAndStatus(
+                        .findByBookerIdAndStatusOrderByStartDesc(
                                 userId,
                                 Status.REJECTED,
-                                Sort.by(Sort.Direction.DESC, "start"))
+                                pageable)
                         .stream()
                         .map(BookingMapper::toBookingDtoResponse)
                         .collect(Collectors.toList());
             default:
                 log.info("BookingService: findAllByState implementation. User ID {}, stateText by default.", userId);
                 return bookingRepository
-                        .findByBookerId(
+                        .findByBookerIdOrderByStartDesc(
                                 userId,
-                                Sort.by(Sort.Direction.DESC, "start"))
+                                pageable)
                         .stream()
                         .map(BookingMapper::toBookingDtoResponse)
                         .collect(Collectors.toList());
@@ -102,12 +105,15 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<BookingDtoResponse> findAllByOwnerIdAndState(Long userId, String stateText) {
+    public List<BookingDtoResponse> findAllByOwnerIdAndStatus(Long userId, Status status, int from, int size) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(String.format("User ID %s doesn't exist.", userId)));
-        List<BookingDtoResponse> bookings = bookingRepository.findByItemOwnerId(
+
+        Pageable pageable = createPageRequest(from, size);
+
+        List<BookingDtoResponse> bookings = bookingRepository.findByItemOwnerIdOrderByStartDesc(
                         userId,
-                        Sort.by(Sort.Direction.DESC, "start"))
+                        pageable)
                 .stream()
                 .map(BookingMapper::toBookingDtoResponse)
                 .collect(Collectors.toList());
@@ -116,64 +122,64 @@ public class BookingServiceImpl implements BookingService {
             throw new NotFoundException(String.format("User ID %s doesn't have items.", userId));
         }
 
-        switch (Status.valueOf(stateText)) {
+        switch (status) {
             case CURRENT:
-                log.info("BookingService: findAllByOwnerIdAndState implementation. User ID {}, stateText {}.",
-                        userId, stateText);
+                log.info("BookingService: findAllByOwnerIdAndStatus implementation. User ID {}, status CURRENT.",
+                        userId);
                 return bookingRepository
-                        .findByItemOwnerIdAndCurrent(
+                        .findByItemOwnerIdAndCurrentOrderByStartDesc(
                                 userId,
                                 LocalDateTime.now(),
-                                Sort.by(Sort.Direction.DESC, "start"))
+                                pageable)
                         .stream()
                         .map(BookingMapper::toBookingDtoResponse)
                         .collect(Collectors.toList());
             case PAST:
-                log.info("BookingService: findAllByOwnerIdAndState implementation. User ID {}, stateText {}.",
-                        userId, stateText);
+                log.info("BookingService: findAllByOwnerIdAndStatus implementation. User ID {}, status PAST.",
+                        userId);
                 return bookingRepository
-                        .findByItemOwnerIdAndEndIsBefore(
+                        .findByItemOwnerIdAndEndIsBeforeOrderByStartDesc(
                                 userId,
                                 LocalDateTime.now(),
-                                Sort.by(Sort.Direction.DESC, "start"))
+                                pageable)
                         .stream()
                         .map(BookingMapper::toBookingDtoResponse)
                         .collect(Collectors.toList());
             case FUTURE:
-                log.info("BookingService: findAllByOwnerIdAndState implementation. User ID {}, stateText {}.",
-                        userId, stateText);
+                log.info("BookingService: findAllByOwnerIdAndStatus implementation. User ID {}, status FUTURE.",
+                        userId);
                 return bookingRepository
-                        .findByItemOwnerIdAndStartIsAfter(
+                        .findByItemOwnerIdAndStartIsAfterOrderByStartDesc(
                                 userId,
                                 LocalDateTime.now(),
-                                Sort.by(Sort.Direction.DESC, "start"))
+                                pageable)
                         .stream()
                         .map(BookingMapper::toBookingDtoResponse)
                         .collect(Collectors.toList());
             case WAITING:
-                log.info("BookingService: findAllByOwnerIdAndState implementation. User ID {}, stateText {}.",
-                        userId, stateText);
+                log.info("BookingService: findAllByOwnerIdAndStatus implementation. User ID {}, status WAITING.",
+                        userId);
                 return bookingRepository
-                        .findByItemOwnerIdAndStatus(
+                        .findByItemOwnerIdAndStatusOrderByStartDesc(
                                 userId,
                                 Status.WAITING,
-                                Sort.by(Sort.Direction.DESC, "start"))
+                                pageable)
                         .stream()
                         .map(BookingMapper::toBookingDtoResponse)
                         .collect(Collectors.toList());
             case REJECTED:
-                log.info("BookingService: findAllByOwnerIdAndState implementation. User ID {}, stateText {}.",
-                        userId, stateText);
+                log.info("BookingService: findAllByOwnerIdAndStatus implementation. User ID {}, status REJECTED.",
+                        userId);
                 return bookingRepository
-                        .findByItemOwnerIdAndStatus(
+                        .findByItemOwnerIdAndStatusOrderByStartDesc(
                                 userId,
                                 Status.REJECTED,
-                                Sort.by(Sort.Direction.DESC, "start"))
+                                pageable)
                         .stream()
                         .map(BookingMapper::toBookingDtoResponse)
                         .collect(Collectors.toList());
             default:
-                log.info("BookingService: findAllByOwnerIdAndState implementation. User ID {}, stateText by default.",
+                log.info("BookingService: findAllByOwnerIdAndStatus implementation. User ID {}, status text by default.",
                         userId);
                 return bookings;
         }
@@ -215,7 +221,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional
-    public BookingDtoResponse updateState(Long userId, Long bookingId, Boolean approved) {
+    public BookingDtoResponse updateStatus(Long userId, Long bookingId, Boolean approved) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException(String.format("Booking ID %s doesn't exist.", bookingId)));
 
@@ -241,5 +247,9 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new NotFoundException(String.format("Booking ID %s doesn't exist.", bookingId)));
         log.info("BookingService: delete implementation. Booking ID {}.", bookingId);
         bookingRepository.deleteById(bookingId);
+    }
+
+    private PageRequest createPageRequest(int from, int size) {
+        return PageRequest.of(from / size, size);
     }
 }

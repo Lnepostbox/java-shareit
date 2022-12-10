@@ -5,6 +5,8 @@ import java.util.List;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class ItemDtoResponse {
 
     private Long id;
@@ -22,6 +24,8 @@ public class ItemDtoResponse {
     private ItemBooking nextBooking;
 
     private List<CommentDto> comments;
+
+    private Long requestId;
 
     @Data
     public static class ItemOwner {

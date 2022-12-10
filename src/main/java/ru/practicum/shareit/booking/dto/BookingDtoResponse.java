@@ -6,6 +6,8 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class BookingDtoResponse {
 
     private Long id;

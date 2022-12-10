@@ -7,6 +7,9 @@ import javax.validation.constraints.NotNull;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode
 public class ItemDtoRequest {
 
     private Long id;
@@ -19,4 +22,6 @@ public class ItemDtoRequest {
 
     @NotNull(groups = {Create.class})
     private Boolean available;
+
+    private Long requestId;
 }

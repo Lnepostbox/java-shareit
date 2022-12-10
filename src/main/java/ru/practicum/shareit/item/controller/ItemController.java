@@ -11,8 +11,9 @@ import ru.practicum.shareit.item.service.CommentService;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.validator.Create;
 import ru.practicum.shareit.validator.Update;
-
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
@@ -25,18 +26,28 @@ public class ItemController {
     private final CommentService commentService;
 
     @GetMapping
-    public List<ItemDtoResponse> findAllByOwnerId(@RequestHeader("X-Sharer-User-Id") Long userId) {
-        log.info("ItemController: findAllByOwnerId implementation. User ID {}.", userId);
-        return itemService.findAllByOwnerId(userId);
+    public List<ItemDtoResponse> findAllByOwnerId(
+            @RequestHeader("X-Sharer-User-Id") Long ownerId,
+            @RequestParam(value = "from", defaultValue = "0")
+            @PositiveOrZero int from,
+            @RequestParam(value = "size", defaultValue = "10")
+            @Positive int size) {
+        log.info("ItemController: findAllByOwnerId implementation. User ID {}.", ownerId);
+        return itemService.findAllByOwnerId(ownerId, from, size);
     }
 
     @GetMapping(value = "/search")
-    public List<ItemDtoResponse> findAllByText(@RequestParam(name = "text") String text) {
+    public List<ItemDtoResponse> findAllByText(
+            @RequestParam(name = "text") String text,
+            @RequestParam(value = "from", defaultValue = "0")
+            @PositiveOrZero int from,
+            @RequestParam(value = "size", defaultValue = "10")
+            @Positive int size) {
         if (text.isBlank()) {
             return List.of();
         }
         log.info("ItemController: findAllByText implementation. Text: {}.", text);
-        return itemService.findAllByText(text);
+        return itemService.findAllByText(text, from, size);
     }
 
     @GetMapping(value = "/{itemId}")

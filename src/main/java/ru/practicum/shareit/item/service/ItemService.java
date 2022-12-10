@@ -6,9 +6,11 @@ import java.util.List;
 
 public interface ItemService {
 
-    List<ItemDtoResponse> findAllByOwnerId(Long userId);
+    List<ItemDtoResponse> findAllByOwnerId(Long ownerId, int from, int size);
 
-    List<ItemDtoResponse> findAllByText(String text);
+    List<ItemDtoResponse> findAllByText(String text, int from, int size);
+
+    List<ItemDtoResponse> findAllByRequestId(Long requestId);
 
     ItemDtoResponse findById(Long userId, Long itemId);
 
