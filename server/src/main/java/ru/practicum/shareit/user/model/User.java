@@ -2,6 +2,13 @@ package ru.practicum.shareit.user.model;
 import lombok.*;
 import javax.persistence.*;
 
+<<<<<<< HEAD:server/src/main/java/ru/practicum/shareit/user/model/User.java
+=======
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+>>>>>>> main:src/main/java/ru/practicum/shareit/user/model/User.java
 @Entity
 @Table(name = "users", schema = "public")
 @Getter

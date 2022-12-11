@@ -12,7 +12,14 @@ import javax.validation.constraints.NotNull;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+<<<<<<< HEAD:gateway/src/main/java/ru/practicum/shareit/item/dto/ItemRequestDto.java
 public class ItemRequestDto {
+=======
+@EqualsAndHashCode
+public class ItemDtoRequest {
+
+    private Long id;
+>>>>>>> main:src/main/java/ru/practicum/shareit/item/dto/ItemDtoRequest.java
 
     @NotBlank(groups = {Create.class})
     private String name;
@@ -24,4 +31,8 @@ public class ItemRequestDto {
     private Boolean available;
 
     private Long requestId;
+<<<<<<< HEAD:gateway/src/main/java/ru/practicum/shareit/item/dto/ItemRequestDto.java
 }
+=======
+}
+>>>>>>> main:src/main/java/ru/practicum/shareit/item/dto/ItemDtoRequest.java

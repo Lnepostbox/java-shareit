@@ -6,7 +6,10 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+<<<<<<< HEAD:gateway/src/main/java/ru/practicum/shareit/validator/StartBeforeEndDateValid.java
 
+=======
+>>>>>>> main:src/main/java/ru/practicum/shareit/validator/StartBeforeEndDateValid.java
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Target(ElementType.TYPE_USE)

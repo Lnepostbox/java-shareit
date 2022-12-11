@@ -5,6 +5,13 @@ import ru.practicum.shareit.user.model.User;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
+<<<<<<< HEAD:server/src/main/java/ru/practicum/shareit/item/model/Comment.java
+=======
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+>>>>>>> main:src/main/java/ru/practicum/shareit/item/model/Comment.java
 @Entity
 @Table(name = "comments", schema = "public")
 @Getter

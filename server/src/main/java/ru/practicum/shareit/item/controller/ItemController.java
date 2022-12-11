@@ -8,6 +8,12 @@ import ru.practicum.shareit.item.dto.ItemDtoRequest;
 import ru.practicum.shareit.item.dto.ItemDtoResponse;
 import ru.practicum.shareit.item.service.CommentService;
 import ru.practicum.shareit.item.service.ItemService;
+<<<<<<< HEAD:server/src/main/java/ru/practicum/shareit/item/controller/ItemController.java
+=======
+import ru.practicum.shareit.validator.Create;
+import ru.practicum.shareit.validator.Update;
+import javax.validation.Valid;
+>>>>>>> main:src/main/java/ru/practicum/shareit/item/controller/ItemController.java
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
@@ -25,10 +31,17 @@ public class ItemController {
     public List<ItemDtoResponse> findAllByOwnerId(
             @RequestHeader("X-Sharer-User-Id") Long ownerId,
             @RequestParam(value = "from", defaultValue = "0")
+<<<<<<< HEAD:server/src/main/java/ru/practicum/shareit/item/controller/ItemController.java
             @PositiveOrZero Integer from,
             @RequestParam(value = "size", defaultValue = "10")
             @Positive Integer size) {
         log.info("ItemServerController: findAllByOwnerId implementation. User ID {}.", ownerId);
+=======
+            @PositiveOrZero int from,
+            @RequestParam(value = "size", defaultValue = "10")
+            @Positive int size) {
+        log.info("ItemController: findAllByOwnerId implementation. User ID {}.", ownerId);
+>>>>>>> main:src/main/java/ru/practicum/shareit/item/controller/ItemController.java
         return itemService.findAllByOwnerId(ownerId, from, size);
     }
 
@@ -36,10 +49,20 @@ public class ItemController {
     public List<ItemDtoResponse> findAllByText(
             @RequestParam(name = "text") String text,
             @RequestParam(value = "from", defaultValue = "0")
+<<<<<<< HEAD:server/src/main/java/ru/practicum/shareit/item/controller/ItemController.java
             @PositiveOrZero Integer from,
             @RequestParam(value = "size", defaultValue = "10")
             @Positive Integer size) {
         log.info("ItemServerController: findAllByText implementation. Text: {}.", text);
+=======
+            @PositiveOrZero int from,
+            @RequestParam(value = "size", defaultValue = "10")
+            @Positive int size) {
+        if (text.isBlank()) {
+            return List.of();
+        }
+        log.info("ItemController: findAllByText implementation. Text: {}.", text);
+>>>>>>> main:src/main/java/ru/practicum/shareit/item/controller/ItemController.java
         return itemService.findAllByText(text, from, size);
     }
 

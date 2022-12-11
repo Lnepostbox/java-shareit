@@ -5,6 +5,13 @@ import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 import javax.persistence.*;
 
+<<<<<<< HEAD:server/src/main/java/ru/practicum/shareit/item/model/Item.java
+=======
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+>>>>>>> main:src/main/java/ru/practicum/shareit/item/model/Item.java
 @Entity
 @Table(name = "items", schema = "public")
 @Getter
