@@ -74,9 +74,6 @@ public class BookingController {
 			@RequestHeader("X-Sharer-User-Id") Long userId,
 			@PathVariable Long bookingId,
 			@RequestParam Boolean approved) {
-		if (approved == null) {
-			throw new BookingException("Incorrect (approved) state insertion.");
-		}
 		log.info("BookingGatewayController: updateBookingStatus implementation. User ID {}, booking ID {}.",
 				userId, bookingId);
 		return bookingClient.updateBookingStatus(userId, bookingId, approved);

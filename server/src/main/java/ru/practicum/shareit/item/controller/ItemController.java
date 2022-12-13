@@ -8,8 +8,6 @@ import ru.practicum.shareit.item.dto.ItemDtoRequest;
 import ru.practicum.shareit.item.dto.ItemDtoResponse;
 import ru.practicum.shareit.item.service.CommentService;
 import ru.practicum.shareit.item.service.ItemService;
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
@@ -24,10 +22,8 @@ public class ItemController {
     @GetMapping
     public List<ItemDtoResponse> findAllByOwnerId(
             @RequestHeader("X-Sharer-User-Id") Long ownerId,
-            @RequestParam(value = "from", defaultValue = "0")
-            @PositiveOrZero Integer from,
-            @RequestParam(value = "size", defaultValue = "10")
-            @Positive Integer size) {
+            @RequestParam(value = "from", defaultValue = "0") Integer from,
+            @RequestParam(value = "size", defaultValue = "10") Integer size) {
         log.info("ItemServerController: findAllByOwnerId implementation. User ID {}.", ownerId);
         return itemService.findAllByOwnerId(ownerId, from, size);
     }
@@ -35,10 +31,8 @@ public class ItemController {
     @GetMapping(value = "/search")
     public List<ItemDtoResponse> findAllByText(
             @RequestParam(name = "text") String text,
-            @RequestParam(value = "from", defaultValue = "0")
-            @PositiveOrZero Integer from,
-            @RequestParam(value = "size", defaultValue = "10")
-            @Positive Integer size) {
+            @RequestParam(value = "from", defaultValue = "0") Integer from,
+            @RequestParam(value = "size", defaultValue = "10") Integer size) {
         log.info("ItemServerController: findAllByText implementation. Text: {}.", text);
         return itemService.findAllByText(text, from, size);
     }

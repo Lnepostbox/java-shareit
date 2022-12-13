@@ -7,8 +7,6 @@ import ru.practicum.shareit.booking.dto.BookingDtoRequest;
 import ru.practicum.shareit.booking.dto.BookingDtoResponse;
 import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.booking.model.Status;
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
@@ -23,10 +21,8 @@ public class BookingController {
     public List<BookingDtoResponse> findAllByStatus(
             @RequestHeader("X-Sharer-User-Id") Long userId,
             @RequestParam(name = "state", defaultValue = "ALL") String stateText,
-            @RequestParam(value = "from", defaultValue = "0")
-            @PositiveOrZero Integer from,
-            @RequestParam(value = "size", defaultValue = "10")
-            @Positive Integer size) {
+            @RequestParam(value = "from", defaultValue = "0") Integer from,
+            @RequestParam(value = "size", defaultValue = "10") Integer size) {
         log.info("BookingServerController: findAllByState implementation. User ID {}, stateText {}.",
                 userId, stateText);
         return bookingService.findAllByStatus(userId, Status.valueOf(stateText), from, size);
@@ -36,10 +32,8 @@ public class BookingController {
     public List<BookingDtoResponse> findAllByOwnerIdAndStatus(
             @RequestHeader("X-Sharer-User-Id") Long userId,
             @RequestParam(name = "state", defaultValue = "ALL") String stateText,
-            @RequestParam(value = "from", defaultValue = "0")
-            @PositiveOrZero Integer from,
-            @RequestParam(value = "size", defaultValue = "10")
-            @Positive Integer size) {
+            @RequestParam(value = "from", defaultValue = "0") Integer from,
+            @RequestParam(value = "size", defaultValue = "10") Integer size) {
         log.info("BookingServerController: findAllByOwnerIdAndStatus implementation. User ID {}, stateText {}.",
                 userId, stateText);
         return bookingService.findAllByOwnerIdAndStatus(userId, Status.valueOf(stateText), from, size);
